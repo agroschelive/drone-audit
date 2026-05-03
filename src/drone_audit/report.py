@@ -14,7 +14,7 @@ except Exception:  # pragma: no cover
 
 def _format_number(value: Any, digits: int = 2) -> str:
     if value is None:
-        return "not available"
+        return "não disponível"
     try:
         return f"{float(value):.{digits}f}"
     except (TypeError, ValueError):
@@ -23,18 +23,18 @@ def _format_number(value: Any, digits: int = 2) -> str:
 
 def _map_html(df: pd.DataFrame) -> str:
     if folium is None or df.empty or {"latitude", "longitude"} - set(df.columns):
-        return "<p>Map not available for these data.</p>"
+        return "<p>Mapa não disponível para estes dados.</p>"
 
     coords_df = df[["latitude", "longitude"]].dropna()
     if coords_df.empty:
-        return "<p>Map not available for these data.</p>"
+        return "<p>Mapa não disponível para estes dados.</p>"
 
     coords = [(float(row.latitude), float(row.longitude)) for row in coords_df.itertuples()]
     fmap = folium.Map(location=coords[0], zoom_start=16, control_scale=True)
     if len(coords) >= 2:
-        folium.PolyLine(locations=coords, weight=4, tooltip="Route").add_to(fmap)
-    folium.Marker(location=coords[0], tooltip="Start").add_to(fmap)
-    folium.Marker(location=coords[-1], tooltip="End").add_to(fmap)
+        folium.PolyLine(locations=coords, weight=4, tooltip="Rota").add_to(fmap)
+    folium.Marker(location=coords[0], tooltip="Início").add_to(fmap)
+    folium.Marker(location=coords[-1], tooltip="Fim").add_to(fmap)
     return fmap._repr_html_()
 
 
@@ -50,24 +50,24 @@ def build_html_report(
     state_rows = "".join(
         f"<tr><td>{escape(str(state))}</td><td>{_format_number(seconds, 1)} s</td></tr>"
         for state, seconds in state_durations.items()
-    ) or "<tr><td colspan='2'>not available</td></tr>"
+    ) or "<tr><td colspan='2'>não disponível</td></tr>"
 
     field_rows = "".join(
         f"<tr><td>{escape(str(key))}</td><td>{escape(str(value))}</td></tr>"
         for key, value in field_data.items()
-    ) or "<tr><td colspan='2'>not provided</td></tr>"
+    ) or "<tr><td colspan='2'>não informado</td></tr>"
 
     warning_items = "".join(
         f"<li>{escape(str(message))}</li>"
         for message in warnings
     )
-    warning_list = f"<ul>{warning_items}</ul>" if warning_items else "<p>No processing warnings.</p>"
+    warning_list = f"<ul>{warning_items}</ul>" if warning_items else "<p>Nenhum aviso de processamento.</p>"
 
     return f"""<!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8">
-  <title>Drone Audit - Auxiliary Report</title>
+  <title>Drone Audit - Relatório Auxiliar</title>
   <style>
     body {{ font-family: Arial, sans-serif; margin: 32px; color: #222; }}
     h1, h2 {{ color: #113322; }}
@@ -78,37 +78,37 @@ def build_html_report(
   </style>
 </head>
 <body>
-  <h1>Drone Audit - Auxiliary Report</h1>
+  <h1>Drone Audit - Relatório Auxiliar</h1>
   <div class="warning">
-    This report is auxiliary and experimental. It does not replace professional interpretation, field validation or technical responsibility.
+    Este relatório é auxiliar e experimental. Não substitui interpretação profissional, validação em campo ou responsabilidade técnica.
   </div>
 
-  <h2>Summary</h2>
+  <h2>Resumo</h2>
   <table>
-    <tr><th>Metric</th><th>Value</th></tr>
-    <tr><td>Analyzed points</td><td>{len(df)}</td></tr>
-    <tr><td>Traveled distance</td><td>{_format_number(metrics.get('distance_m'))} m</td></tr>
-    <tr><td>Total time</td><td>{_format_number(metrics.get('time_s'), 1)} s</td></tr>
-    <tr><td>Provided area</td><td>{_format_number(metrics.get('area_ha'))} ha</td></tr>
-    <tr><td>Estimated productivity</td><td>{_format_number(metrics.get('productivity_ha_h'))} ha/h</td></tr>
+    <tr><th>Métrica</th><th>Valor</th></tr>
+    <tr><td>Pontos analisados</td><td>{len(df)}</td></tr>
+    <tr><td>Distância percorrida</td><td>{_format_number(metrics.get('distance_m'))} m</td></tr>
+    <tr><td>Tempo total</td><td>{_format_number(metrics.get('time_s'), 1)} s</td></tr>
+    <tr><td>Área informada</td><td>{_format_number(metrics.get('area_ha'))} ha</td></tr>
+    <tr><td>Produtividade estimada</td><td>{_format_number(metrics.get('productivity_ha_h'))} ha/h</td></tr>
   </table>
 
-  <h2>Estimated states</h2>
+  <h2>Estados estimados</h2>
   <table>
-    <tr><th>State</th><th>Duration</th></tr>
+    <tr><th>Estado</th><th>Duração</th></tr>
     {state_rows}
   </table>
 
-  <h2>Processing warnings</h2>
+  <h2>Avisos de processamento</h2>
   {warning_list}
 
-  <h2>Complementary data</h2>
+  <h2>Dados complementares</h2>
   <table>
-    <tr><th>Field</th><th>Value</th></tr>
+    <tr><th>Campo</th><th>Valor</th></tr>
     {field_rows}
   </table>
 
-  <h2>Map</h2>
+  <h2>Mapa</h2>
   {_map_html(df)}
 </body>
 </html>

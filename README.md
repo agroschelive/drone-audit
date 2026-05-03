@@ -54,7 +54,7 @@ Never publish real client data, private coordinates, identifiable flight files, 
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
 # .venv\Scripts\activate   # Windows PowerShell
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Run with KML
@@ -88,7 +88,8 @@ PYTHONPATH=src python -m drone_audit.cli \
 ## Run tests
 
 ```bash
-PYTHONPATH=src pytest -q
+pip install -e ".[test]"
+pytest -q
 ```
 
 ## Author
