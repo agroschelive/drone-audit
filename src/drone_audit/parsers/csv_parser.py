@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -33,14 +34,6 @@ def _to_numeric(series: pd.Series | None) -> pd.Series:
     return pd.to_numeric(series, errors="coerce")
 
 
-def _invalidate_out_of_range(series: pd.Series, min_value: float, max_value: float) -> tuple[pd.Series, int]:
-    mask = series.notna() & ((series < min_value) | (series > max_value))
-    invalid_count = int(mask.sum())
-    if invalid_count:
-        series = series.mask(mask)
-    return series, invalid_count
-
-
 def _normalize_boolean(value) -> bool | None:
     if pd.isna(value):
         return None
@@ -48,18 +41,60 @@ def _normalize_boolean(value) -> bool | None:
         return value
     if isinstance(value, (int, float)):
         return bool(value)
+
     text = str(value).strip().lower()
+
     if text in {"1", "true", "yes", "y", "on", "open", "spraying"}:
         return True
+
     if text in {"0", "false", "no", "n", "off", "closed", "idle"}:
         return False
+
     return None
+
+
+def _count_rows_with_extra_fields(csv_path: Path) -> int:
+    text = csv_path.read_text(encoding="utf-8", errors="replace")
+
+    if not text.strip():
+        return 0
+
+    sample = text[:4096]
+
+    try:
+        dialect = csv.Sniffer().sniff(sample)
+    except csv.Error:
+        dialect = csv.excel
+
+    rows = list(csv.reader(text.splitlines(), dialect))
+    rows = [row for row in rows if row]
+
+    if not rows:
+        return 0
+
+    expected_columns = len(rows[0])
+
+    return sum(1 for row in rows[1:] if len(row) > expected_columns)
 
 
 def parse_csv(path: str | Path) -> ParsedCSV:
     csv_path = Path(path)
     warnings: list[str] = []
-    df = pd.read_csv(csv_path, sep=None, engine="python")
+
+    skipped_malformed_rows = _count_rows_with_extra_fields(csv_path)
+
+    df = pd.read_csv(
+        csv_path,
+        sep=None,
+        engine="python",
+        on_bad_lines="skip",
+    )
+
+    if skipped_malformed_rows:
+        warnings.append(
+            f"CSV contains {skipped_malformed_rows} skipped malformed row(s); dataset may be incomplete."
+        )
+
     df = df.rename(columns={col: _normalize_column_name(str(col)) for col in df.columns})
     columns = set(df.columns)
 
@@ -76,6 +111,7 @@ def parse_csv(path: str | Path) -> ParsedCSV:
         warnings.append("CSV does not contain recognizable latitude/longitude columns.")
 
     out = pd.DataFrame(index=df.index)
+
     out["timestamp"] = pd.to_datetime(df[ts_col], errors="coerce", utc=True) if ts_col else pd.NaT
     out["latitude"] = _to_numeric(df[lat_col]) if lat_col else pd.NA
     out["longitude"] = _to_numeric(df[lon_col]) if lon_col else pd.NA
@@ -96,18 +132,20 @@ def parse_csv(path: str | Path) -> ParsedCSV:
     if ts_col:
         invalid_ts_count = int(out["timestamp"].isna().sum())
         if invalid_ts_count:
-            warnings.append(f"CSV has {invalid_ts_count} row(s) with invalid timestamp values.")
+            warnings.append(f"CSV contains {invalid_ts_count} rows with invalid timestamps.")
     else:
         warnings.append("CSV does not contain a recognizable timestamp column.")
 
-    if lat_col:
-        out["latitude"], invalid_lat_count = _invalidate_out_of_range(out["latitude"], -90, 90)
-        if invalid_lat_count:
-            warnings.append(f"CSV has {invalid_lat_count} row(s) with latitude out of range [-90, 90].")
+    lat = pd.to_numeric(out["latitude"], errors="coerce")
+    lon = pd.to_numeric(out["longitude"], errors="coerce")
 
-    if lon_col:
-        out["longitude"], invalid_lon_count = _invalidate_out_of_range(out["longitude"], -180, 180)
-        if invalid_lon_count:
-            warnings.append(f"CSV has {invalid_lon_count} row(s) with longitude out of range [-180, 180].")
+    invalid_coord = (lat < -90) | (lat > 90) | (lon < -180) | (lon > 180)
+    invalid_coord = invalid_coord.fillna(False)
+
+    invalid_coord_count = int(invalid_coord.sum())
+
+    if invalid_coord_count:
+        out.loc[invalid_coord, ["latitude", "longitude"]] = pd.NA
+        warnings.append(f"CSV contains {invalid_coord_count} rows with out-of-range coordinates.")
 
     return ParsedCSV(dataframe=out, warnings=warnings)
