@@ -26,8 +26,36 @@ def test_pipeline_handles_corrupted_rows_and_invalid_coordinates(tmp_path):
         encoding="utf-8",
     )
 
-    result = run_pipeline(csv_path=csv_path)
+    output = tmp_path / "bad_report.html"
+    result = run_pipeline(csv_path=csv_path, output_path=output)
     assert result.metrics["distance_m"] > 0
     assert result.metrics["time_s"] == 40.0
     assert any("invalid timestamps" in msg for msg in result.warnings)
     assert any("out-of-range coordinates" in msg for msg in result.warnings)
+
+
+def test_corrupted_csv_warnings_are_rendered_in_html_report(tmp_path):
+    csv_path = tmp_path / "bad_input_for_report.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "timestamp,latitude,longitude,speed_m_s,valve_open",
+                "2026-01-01T00:00:00Z,-23.0,-46.0,2.0,true",
+                "not-a-date,-23.01,-46.01,2.0,true",
+                "2026-01-01T00:00:20Z,200,-46.02,2.0,false",
+                "oops,too,many,columns,ignored,here",
+                "2026-01-01T00:00:40Z,-23.02,-46.03,2.0,false",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    output = tmp_path / "corrupted_report.html"
+    run_pipeline(csv_path=csv_path, output_path=output)
+
+    html = output.read_text(encoding="utf-8")
+    assert "Processing warnings" in html
+    assert "CSV contains" in html
+    assert "dataset may be incomplete" in html
+    assert "invalid timestamps" in html
+    assert "out-of-range coordinates" in html
