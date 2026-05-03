@@ -7,7 +7,9 @@ def test_pipeline_generates_report(tmp_path):
     result = run_pipeline(csv_path=EXAMPLES / "sample_flight.csv", area_ha=12.5, output_path=output)
     assert output.exists()
     assert result.metrics["distance_m"] > 0
-    assert "Drone Audit" in output.read_text(encoding="utf-8")
+    html = output.read_text(encoding="utf-8")
+    assert "Drone Audit - Relatório Auxiliar" in html
+    assert "Avisos de processamento" in html
 
 
 def test_pipeline_handles_corrupted_rows_and_invalid_coordinates(tmp_path):
@@ -54,7 +56,7 @@ def test_corrupted_csv_warnings_are_rendered_in_html_report(tmp_path):
     run_pipeline(csv_path=csv_path, output_path=output)
 
     html = output.read_text(encoding="utf-8")
-    assert "Processing warnings" in html
+    assert "Avisos de processamento" in html
     assert "CSV contains" in html
     assert "dataset may be incomplete" in html
     assert "invalid timestamps" in html
