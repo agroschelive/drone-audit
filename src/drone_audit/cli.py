@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from drone_audit.pipeline import PipelineResult, run_pipeline
+from drone_audit.schema import NORMALIZED_COLUMNS, REQUIRED_POSITION_COLUMNS
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,7 +41,13 @@ def build_diagnostics(result: PipelineResult, args: argparse.Namespace) -> dict[
         "states": [],
     }
 
-    if {"latitude", "longitude"}.issubset(df.columns):
+    available_normalized_columns = [col for col in NORMALIZED_COLUMNS if col in df.columns]
+    missing_normalized_columns = [col for col in NORMALIZED_COLUMNS if col not in df.columns]
+
+    diagnostics["available_normalized_columns"] = available_normalized_columns
+    diagnostics["missing_normalized_columns"] = missing_normalized_columns
+
+    if set(REQUIRED_POSITION_COLUMNS).issubset(df.columns):
         diagnostics["valid_coordinates"] = int(df[["latitude", "longitude"]].notna().all(axis=1).sum())
 
     if "timestamp" in df.columns:
@@ -48,6 +55,13 @@ def build_diagnostics(result: PipelineResult, args: argparse.Namespace) -> dict[
 
     if "state" in df.columns:
         diagnostics["states"] = sorted(str(s) for s in df["state"].dropna().unique())
+
+    diagnostics["data_quality"] = {
+        "rows": int(len(df)),
+        "valid_coordinates": int(diagnostics["valid_coordinates"]),
+        "valid_timestamps": int(diagnostics["valid_timestamps"]),
+        "warnings_count": int(len(result.warnings)),
+    }
 
     return diagnostics
 

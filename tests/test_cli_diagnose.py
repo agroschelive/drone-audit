@@ -35,6 +35,9 @@ def test_cli_diagnose_includes_diagnostics(tmp_path, capsys):
             "has_valve_open",
             "has_battery",
             "states",
+            "missing_normalized_columns",
+            "available_normalized_columns",
+            "data_quality",
         ]
     ).issubset(diagnostics)
     assert diagnostics["rows"] > 0
@@ -47,3 +50,14 @@ def test_cli_diagnose_includes_diagnostics(tmp_path, capsys):
     assert diagnostics["has_battery"] is True
     assert isinstance(diagnostics["states"], list)
     assert diagnostics["states"]
+
+
+def test_cli_diagnose_data_quality_fields(tmp_path, capsys):
+    output = tmp_path / "report.html"
+
+    main(["--csv", str(EXAMPLES / "sample_flight.csv"), "--area-ha", "12.5", "--output", str(output), "--diagnose"])
+    payload = json.loads(capsys.readouterr().out)
+
+    data_quality = payload["diagnostics"]["data_quality"]
+    assert {"rows", "valid_coordinates", "valid_timestamps", "warnings_count"}.issubset(data_quality)
+    assert data_quality["rows"] > 0
