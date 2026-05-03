@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+!.env.example
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Reports and local outputs
+reports/
+outputs/
+*.html
+*.pdf
+
+# Sensitive or private data
+raw/
+data/raw/
+data/private/
+private/
+client_data/
+*.DAT
+*.dat
+*.TXT
+*.txt
+*.kmz
+*.zip
+*.7z
+*.rar
+
+# Keep examples, docs and source tracked
+!examples/*.kml
+!examples/*.csv
+!examples/*.json
+!docs/**
+!src/**
+!tests/**
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

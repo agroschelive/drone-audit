@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop, "feature/**"]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+        env:
+          PYTHONPATH: src
