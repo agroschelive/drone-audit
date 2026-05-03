@@ -33,6 +33,14 @@ def _to_numeric(series: pd.Series | None) -> pd.Series:
     return pd.to_numeric(series, errors="coerce")
 
 
+def _invalidate_out_of_range(series: pd.Series, min_value: float, max_value: float) -> tuple[pd.Series, int]:
+    mask = series.notna() & ((series < min_value) | (series > max_value))
+    invalid_count = int(mask.sum())
+    if invalid_count:
+        series = series.mask(mask)
+    return series, invalid_count
+
+
 def _normalize_boolean(value) -> bool | None:
     if pd.isna(value):
         return None
@@ -84,5 +92,22 @@ def parse_csv(path: str | Path) -> ParsedCSV:
     out["valve_open"] = df[valve_col].apply(_normalize_boolean) if valve_col else None
     out["battery_pct"] = _to_numeric(df[battery_col]) if battery_col else pd.NA
     out["source"] = "csv"
+
+    if ts_col:
+        invalid_ts_count = int(out["timestamp"].isna().sum())
+        if invalid_ts_count:
+            warnings.append(f"CSV has {invalid_ts_count} row(s) with invalid timestamp values.")
+    else:
+        warnings.append("CSV does not contain a recognizable timestamp column.")
+
+    if lat_col:
+        out["latitude"], invalid_lat_count = _invalidate_out_of_range(out["latitude"], -90, 90)
+        if invalid_lat_count:
+            warnings.append(f"CSV has {invalid_lat_count} row(s) with latitude out of range [-90, 90].")
+
+    if lon_col:
+        out["longitude"], invalid_lon_count = _invalidate_out_of_range(out["longitude"], -180, 180)
+        if invalid_lon_count:
+            warnings.append(f"CSV has {invalid_lon_count} row(s) with longitude out of range [-180, 180].")
 
     return ParsedCSV(dataframe=out, warnings=warnings)
