@@ -26,8 +26,16 @@ def test_pipeline_handles_corrupted_rows_and_invalid_coordinates(tmp_path):
         encoding="utf-8",
     )
 
-    result = run_pipeline(csv_path=csv_path)
+    output = tmp_path / "corrupted_report.html"
+    result = run_pipeline(csv_path=csv_path, output_path=output)
     assert result.metrics["distance_m"] > 0
     assert result.metrics["time_s"] == 40.0
     assert any("invalid timestamps" in msg for msg in result.warnings)
     assert any("out-of-range coordinates" in msg for msg in result.warnings)
+
+    html = output.read_text(encoding="utf-8")
+    assert "Processing warnings" in html
+    assert "CSV contains" in html
+    assert "dataset may be incomplete" in html
+    assert "invalid timestamps" in html
+    assert "out-of-range coordinates" in html

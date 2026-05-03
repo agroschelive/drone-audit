@@ -42,13 +42,23 @@ def build_html_report(
     df: pd.DataFrame,
     metrics: dict[str, Any],
     field_data: dict[str, Any] | None = None,
+    warnings: list[str] | None = None,
 ) -> str:
     field_data = field_data or {}
+    warnings = warnings or []
     state_durations = metrics.get("state_durations_s") or {}
     state_rows = "".join(
         f"<tr><td>{escape(str(state))}</td><td>{_format_number(seconds, 1)} s</td></tr>"
         for state, seconds in state_durations.items()
     ) or "<tr><td colspan='2'>not available</td></tr>"
+
+
+
+    warning_rows = "".join(
+        f"<li>{escape(str(warning))}</li>"
+        for warning in warnings
+    )
+    warning_html = f"<ul>{warning_rows}</ul>" if warning_rows else "<p>No processing warnings.</p>"
 
     field_rows = "".join(
         f"<tr><td>{escape(str(key))}</td><td>{escape(str(value))}</td></tr>"
@@ -90,6 +100,9 @@ def build_html_report(
     <tr><th>State</th><th>Duration</th></tr>
     {state_rows}
   </table>
+
+  <h2>Processing warnings</h2>
+  {warning_html}
 
   <h2>Complementary data</h2>
   <table>
