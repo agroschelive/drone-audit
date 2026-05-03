@@ -51,7 +51,7 @@ def _normalize_boolean(value) -> bool | None:
 def parse_csv(path: str | Path) -> ParsedCSV:
     csv_path = Path(path)
     warnings: list[str] = []
-    df = pd.read_csv(csv_path, sep=None, engine="python")
+    df = pd.read_csv(csv_path, sep=None, engine="python", on_bad_lines="skip")
     df = df.rename(columns={col: _normalize_column_name(str(col)) for col in df.columns})
     columns = set(df.columns)
 
@@ -84,5 +84,18 @@ def parse_csv(path: str | Path) -> ParsedCSV:
     out["valve_open"] = df[valve_col].apply(_normalize_boolean) if valve_col else None
     out["battery_pct"] = _to_numeric(df[battery_col]) if battery_col else pd.NA
     out["source"] = "csv"
+
+    if ts_col:
+        invalid_ts = int(out["timestamp"].isna().sum())
+        if invalid_ts:
+            warnings.append(f"CSV contains {invalid_ts} rows with invalid timestamps.")
+
+    lat = pd.to_numeric(out["latitude"], errors="coerce")
+    lon = pd.to_numeric(out["longitude"], errors="coerce")
+    invalid_coord = (lat < -90) | (lat > 90) | (lon < -180) | (lon > 180)
+    invalid_coord = invalid_coord.fillna(False)
+    if int(invalid_coord.sum()):
+        out.loc[invalid_coord, ["latitude", "longitude"]] = pd.NA
+        warnings.append(f"CSV contains {int(invalid_coord.sum())} rows with out-of-range coordinates.")
 
     return ParsedCSV(dataframe=out, warnings=warnings)
