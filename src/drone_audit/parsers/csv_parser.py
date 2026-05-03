@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -48,10 +49,43 @@ def _normalize_boolean(value) -> bool | None:
     return None
 
 
+def _count_rows_with_extra_fields(csv_path: Path) -> int:
+    """Count rows that pandas will skip when on_bad_lines='skip' is used.
+
+    Rows with too many fields are dangerous because silently dropping them can
+    understate distance, time and productivity metrics. This pre-scan keeps that
+    data loss auditable through parser warnings.
+    """
+    text = csv_path.read_text(encoding="utf-8", errors="replace")
+    if not text.strip():
+        return 0
+
+    sample = text[:4096]
+    try:
+        dialect = csv.Sniffer().sniff(sample)
+    except csv.Error:
+        dialect = csv.excel
+
+    rows = list(csv.reader(text.splitlines(), dialect))
+    rows = [row for row in rows if row]
+    if not rows:
+        return 0
+
+    expected_columns = len(rows[0])
+    return sum(1 for row in rows[1:] if len(row) > expected_columns)
+
+
 def parse_csv(path: str | Path) -> ParsedCSV:
     csv_path = Path(path)
     warnings: list[str] = []
+    skipped_malformed_rows = _count_rows_with_extra_fields(csv_path)
     df = pd.read_csv(csv_path, sep=None, engine="python", on_bad_lines="skip")
+
+    if skipped_malformed_rows:
+        warnings.append(
+            f"CSV contains {skipped_malformed_rows} skipped malformed row(s); dataset may be incomplete."
+        )
+
     df = df.rename(columns={col: _normalize_column_name(str(col)) for col in df.columns})
     columns = set(df.columns)
 
