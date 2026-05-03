@@ -54,6 +54,7 @@ Never publish real client data, private coordinates, identifiable flight files, 
 python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
 # .venv\Scripts\activate   # Windows PowerShell
+python -m pip install --upgrade pip
 pip install -e .
 ```
 
@@ -83,6 +84,17 @@ PYTHONPATH=src python -m drone_audit.cli \
   --field-data examples/sample_field_data.json \
   --area-ha 12.5 \
   --output reports/enriched_report.html
+```
+
+
+## Run in diagnostic mode
+
+```bash
+PYTHONPATH=src python -m drone_audit.cli \
+  --csv examples/sample_flight.csv \
+  --area-ha 12.5 \
+  --output reports/report_csv.html \
+  --diagnose
 ```
 
 ## Run tests
