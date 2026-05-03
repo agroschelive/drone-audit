@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Fictitious synthetic sample route</name>
+    <Placemark>
+      <name>Sample LineString - synthetic coordinates</name>
+      <LineString>
+        <coordinates>
+          0.000000,0.000000,100
+          0.000200,0.000100,101
+          0.000400,0.000150,100
+          0.000600,0.000200,100
+        </coordinates>
+      </LineString>
+    </Placemark>
+  </Document>
+</kml>

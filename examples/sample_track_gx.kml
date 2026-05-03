@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <name>Fictitious synthetic gx track</name>
+    <Placemark>
+      <name>Sample gx:Track - synthetic coordinates</name>
+      <gx:Track>
+        <when>2026-01-01T12:00:00Z</when>
+        <when>2026-01-01T12:00:10Z</when>
+        <when>2026-01-01T12:00:20Z</when>
+        <gx:coord>0.000000 0.000000 100</gx:coord>
+        <gx:coord>0.000200 0.000100 101</gx:coord>
+        <gx:coord>0.000400 0.000150 100</gx:coord>
+      </gx:Track>
+    </Placemark>
+  </Document>
+</kml>
