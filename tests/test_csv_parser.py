@@ -5,6 +5,7 @@ from conftest import EXAMPLES
 def test_parse_csv():
     parsed = parse_csv(EXAMPLES / "sample_flight.csv")
     df = parsed.dataframe
+
     assert len(df) == 5
     assert df["latitude"].notna().all()
     assert df["valve_open"].tolist()[1] is True
@@ -29,19 +30,41 @@ def test_parse_csv_with_corrupted_and_missing_fields(tmp_path):
 
     parsed = parse_csv(csv_path)
     df = parsed.dataframe
+
     assert len(df) == 5
-    assert any("invalid timestamps" in msg for msg in parsed.warnings)
-    assert any("out-of-range coordinates" in msg for msg in parsed.warnings)
     assert df["timestamp"].isna().sum() == 1
     assert df["latitude"].isna().sum() == 2
+    assert df["longitude"].isna().sum() == 2
+
+    assert any("skipped malformed row" in msg for msg in parsed.warnings)
+    assert any("dataset may be incomplete" in msg for msg in parsed.warnings)
+    assert any("invalid timestamps" in msg for msg in parsed.warnings)
+    assert any("out-of-range coordinates" in msg for msg in parsed.warnings)
 
 
 def test_parse_csv_without_coordinates(tmp_path):
     csv_path = tmp_path / "missing_coords.csv"
     csv_path.write_text(
-        "timestamp,speed_m_s,valve_open\n2026-01-01T00:00:00Z,2.0,true\n",
+        "timestamp,speed_m_s,valve_open\n"
+        "2026-01-01T00:00:00Z,2.0,true\n",
         encoding="utf-8",
     )
 
     parsed = parse_csv(csv_path)
+
     assert any("latitude/longitude" in msg for msg in parsed.warnings)
+
+
+def test_parse_csv_missing_columns(tmp_path):
+    csv_path = tmp_path / "missing_columns.csv"
+    csv_path.write_text(
+        "foo,bar\n"
+        "1,2\n",
+        encoding="utf-8",
+    )
+
+    parsed = parse_csv(csv_path)
+
+    assert any("latitude/longitude" in msg for msg in parsed.warnings)
+    assert any("timestamp column" in msg for msg in parsed.warnings)
+    assert any("speed column" in msg for msg in parsed.warnings)

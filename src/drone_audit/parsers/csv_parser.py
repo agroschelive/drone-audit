@@ -41,26 +41,26 @@ def _normalize_boolean(value) -> bool | None:
         return value
     if isinstance(value, (int, float)):
         return bool(value)
+
     text = str(value).strip().lower()
+
     if text in {"1", "true", "yes", "y", "on", "open", "spraying"}:
         return True
+
     if text in {"0", "false", "no", "n", "off", "closed", "idle"}:
         return False
+
     return None
 
 
 def _count_rows_with_extra_fields(csv_path: Path) -> int:
-    """Count rows that pandas will skip when on_bad_lines='skip' is used.
-
-    Rows with too many fields are dangerous because silently dropping them can
-    understate distance, time and productivity metrics. This pre-scan keeps that
-    data loss auditable through parser warnings.
-    """
     text = csv_path.read_text(encoding="utf-8", errors="replace")
+
     if not text.strip():
         return 0
 
     sample = text[:4096]
+
     try:
         dialect = csv.Sniffer().sniff(sample)
     except csv.Error:
@@ -68,18 +68,27 @@ def _count_rows_with_extra_fields(csv_path: Path) -> int:
 
     rows = list(csv.reader(text.splitlines(), dialect))
     rows = [row for row in rows if row]
+
     if not rows:
         return 0
 
     expected_columns = len(rows[0])
+
     return sum(1 for row in rows[1:] if len(row) > expected_columns)
 
 
 def parse_csv(path: str | Path) -> ParsedCSV:
     csv_path = Path(path)
     warnings: list[str] = []
+
     skipped_malformed_rows = _count_rows_with_extra_fields(csv_path)
-    df = pd.read_csv(csv_path, sep=None, engine="python", on_bad_lines="skip")
+
+    df = pd.read_csv(
+        csv_path,
+        sep=None,
+        engine="python",
+        on_bad_lines="skip",
+    )
 
     if skipped_malformed_rows:
         warnings.append(
@@ -102,6 +111,7 @@ def parse_csv(path: str | Path) -> ParsedCSV:
         warnings.append("CSV does not contain recognizable latitude/longitude columns.")
 
     out = pd.DataFrame(index=df.index)
+
     out["timestamp"] = pd.to_datetime(df[ts_col], errors="coerce", utc=True) if ts_col else pd.NaT
     out["latitude"] = _to_numeric(df[lat_col]) if lat_col else pd.NA
     out["longitude"] = _to_numeric(df[lon_col]) if lon_col else pd.NA
@@ -120,16 +130,22 @@ def parse_csv(path: str | Path) -> ParsedCSV:
     out["source"] = "csv"
 
     if ts_col:
-        invalid_ts = int(out["timestamp"].isna().sum())
-        if invalid_ts:
-            warnings.append(f"CSV contains {invalid_ts} rows with invalid timestamps.")
+        invalid_ts_count = int(out["timestamp"].isna().sum())
+        if invalid_ts_count:
+            warnings.append(f"CSV contains {invalid_ts_count} rows with invalid timestamps.")
+    else:
+        warnings.append("CSV does not contain a recognizable timestamp column.")
 
     lat = pd.to_numeric(out["latitude"], errors="coerce")
     lon = pd.to_numeric(out["longitude"], errors="coerce")
+
     invalid_coord = (lat < -90) | (lat > 90) | (lon < -180) | (lon > 180)
     invalid_coord = invalid_coord.fillna(False)
-    if int(invalid_coord.sum()):
+
+    invalid_coord_count = int(invalid_coord.sum())
+
+    if invalid_coord_count:
         out.loc[invalid_coord, ["latitude", "longitude"]] = pd.NA
-        warnings.append(f"CSV contains {int(invalid_coord.sum())} rows with out-of-range coordinates.")
+        warnings.append(f"CSV contains {invalid_coord_count} rows with out-of-range coordinates.")
 
     return ParsedCSV(dataframe=out, warnings=warnings)
