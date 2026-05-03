@@ -75,7 +75,7 @@ def run_pipeline(
     field_data = load_field_data(field_data_path)
     report_path = None
     if output_path:
-        html = build_html_report(df, metrics, field_data)
+        html = build_html_report(df, metrics, field_data, warnings=warnings)
         report_path = write_html_report(output_path, html)
 
     return PipelineResult(dataframe=df, metrics=metrics, warnings=warnings, report_path=report_path)
