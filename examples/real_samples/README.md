@@ -1,21 +1,11 @@
 # Real samples policy
 
-This folder is reserved for future synthetic or safely sanitized samples.
+This folder is reserved for synthetic or safely sanitized samples only.
 
-- Raw real files must not be placed here.
-- Real coordinates must not be placed here.
-- Real names, serials, and timestamps must not be placed here.
-- Examples should be synthetic whenever possible.
-
-## Acceptable example names
-
-- `t20p_synthetic_export.csv`
-- `t40_synthetic_route.kml`
-- `t50_synthetic_log.txt`
-
-## Forbidden example names
-
-- `real_client_flight.csv`
-- `real_farm.kml`
-- `original_flight.dat`
-- `real_operator_log.txt`
+- Synthetic examples must use clearly fake coordinates if coordinates are needed.
+- Synthetic examples must avoid realistic client/property/operator identifiers.
+- Synthetic examples must avoid real timestamps.
+- File names must include `synthetic` when committed intentionally.
+- Sanitized examples must be reviewed manually before publication.
+- Sanitized examples must not contain real coordinates, identifiable route shapes, names, serials, or real timestamps.
+- Raw real files must never be committed.

@@ -1,0 +1,22 @@
+# Alpha release checklist
+
+- [ ] Version checked in `pyproject.toml` and `README.md`.
+- [ ] `CHANGELOG.md` updated.
+- [ ] README limitations reviewed.
+- [ ] `SECURITY.md` still accurate.
+- [ ] `CONTRIBUTING.md` still accurate.
+- [ ] `docs/support-matrix.md` updated.
+- [ ] `docs/audit-rules.md` updated if classification rules changed.
+- [ ] `docs/expected-real-files.md` updated if validation expectations changed.
+- [ ] `docs/local-real-file-validation.md` reviewed.
+- [ ] `docs/roadmap-backlog.md` reviewed.
+- [ ] No real files committed.
+- [ ] No raw DAT/TXT/CSV/KML real exports committed.
+- [ ] No real coordinates committed.
+- [ ] No identifiable routes committed.
+- [ ] No client/operator/property/equipment identifiers committed.
+- [ ] No tokens, passwords or API keys committed.
+- [ ] `ruff check src tests` passes.
+- [ ] `pytest -q` passes.
+- [ ] Coverage run attempted if available.
+- [ ] Generated reports manually reviewed if relevant.
