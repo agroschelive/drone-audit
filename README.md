@@ -164,3 +164,12 @@ This version adds a foundational layer for operational KPI auditing:
 - SQL migration draft in `db/migrations/20260504_operational_audit_schema.sql` containing core entities (`clientes`, `fazendas`, `talhoes`, `operadores`, `drones`, `baterias`, `missoes`, `voos`, `eventos_voo`, etc.).
 
 Note: this repository currently runs as a local Python pipeline/CLI. The SQL migration is prepared for future Supabase/Postgres integration.
+
+
+## Base Agras
+
+- Formatos aceitos: XLSX, CSV, KML e JSON.
+- Origem esperada: DJI SmartFarm / DJI Agriculture Platform (exportação manual).
+- Limitações: KML pode não conter telemetria detalhada; algumas métricas podem ser estimadas.
+- Métricas calculadas: tempo total, tempo pulverizando/manobrando/deslocando/parado, eficiência operacional, produtividade, consumo bateria/ha e distância/ha.
+- Próximos passos: importar XLSX e KML reais, validar aliases de colunas reais, conectar com Supabase Storage e preparar integração autorizada futura.
