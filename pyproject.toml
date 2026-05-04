@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "drone-audit"
-version = "0.2.1-alpha"
+version = "0.3.0-alpha"
 description = "Experimental auxiliary analysis tool for exported DJI Agras operation files."
 readme = "README.md"
 requires-python = ">=3.11"
