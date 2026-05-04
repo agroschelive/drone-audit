@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from drone_audit.metrics import calculate_segment_distances
+from drone_audit.time_utils import sum_state_time_s
 
 
 def calculate_spray_volume_l(df):
@@ -76,15 +77,15 @@ def calculate_battery_per_ha(df, area_ha):
 
 
 def calculate_spray_time_s(df):
-    return float(df.get("state", pd.Series(dtype=object)).eq("spraying").sum())
+    return sum_state_time_s(df, "spraying")
 
 
 def calculate_non_spray_moving_time_s(df):
-    return float(df.get("state", pd.Series(dtype=object)).eq("moving_without_spraying").sum())
+    return sum_state_time_s(df, "moving_without_spraying")
 
 
 def calculate_idle_time_s(df):
-    return float(df.get("state", pd.Series(dtype=object)).eq("idle").sum())
+    return sum_state_time_s(df, "idle")
 
 
 def calculate_operational_efficiency_pct(spray_time_s, total_time_s):

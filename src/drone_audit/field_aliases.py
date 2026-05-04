@@ -7,15 +7,15 @@ ALIASES = {
     "latitude": ["latitude", "lat", "gps_lat", "aircraft_latitude"],
     "longitude": ["longitude", "lon", "lng", "gps_lon", "aircraft_longitude"],
     "altitude_m": ["altitude", "height", "altitude_m", "height_m", "relative_altitude"],
-    "speed_m_s": ["speed", "velocity", "speed_m_s", "ground_speed", "horizontal_speed"],
-    "battery_pct": ["battery", "battery_pct", "battery_percent", "remaining_battery", "battery_level"],
-    "spray_on": ["spray_on", "spraying", "is_spraying", "sprayer_on", "spray_state", "spray_status"],
-    "valve_open": ["valve_open", "valve", "valve_state", "nozzle_open", "spray_valve"],
-    "pump_on": ["pump_on", "pump", "pump_state"],
-    "flow_l_min": ["flow", "flow_rate", "flow_l_min", "liquid_flow", "spray_flow", "application_flow"],
-    "volume_total_l": ["volume", "total_volume", "volume_l", "spray_volume", "total_spray_volume", "liquid_volume", "pesticide_volume"],
-    "swath_width_m": ["swath", "swath_width", "width", "spray_width", "application_width", "faixa", "largura_faixa"],
-    "area_total_ha": ["area", "area_ha", "applied_area", "spray_area", "worked_area", "hectares"],
+    "speed_m_s": ["speed", "velocity", "speed_m_s", "ground_speed", "horizontal_speed", "speed_km_h"],
+    "battery_pct": ["battery", "battery_pct", "battery_percent", "remaining_battery", "bateria", "bateria_pct", "bateria_percentual"],
+    "spray_on": ["spray_on", "spray", "sprayer", "spraying", "spray_status", "spray_state", "pulverizacao", "pulverizando", "pulverizador", "pulverizador_ligado"],
+    "valve_open": ["valve", "valve_open", "spray_valve", "nozzle", "nozzle_open", "valvula", "valvula_aberta", "bico_aberto"],
+    "pump_on": ["pump", "pump_on", "bomba", "bomba_ligada"],
+    "flow_l_min": ["flow", "flow_rate", "flow_l_min", "liquid_flow", "spray_flow", "vazao", "vazao_l_min", "fluxo", "fluxo_l_min"],
+    "volume_total_l": ["volume", "volume_l", "volume_ml", "total_volume", "total_spray_volume", "spray_volume", "liquid_volume", "volume_aplicado", "volume_total", "calda_l", "calda_aplicada"],
+    "swath_width_m": ["swath", "swath_width", "spray_width", "application_width", "largura_faixa", "faixa", "largura", "largura_aplicacao"],
+    "area_total_ha": ["area", "area_ha", "area_total_ha", "area_m2", "area_m", "spray_area", "applied_area", "worked_area", "area_aplicada", "area_total", "hectares", "ha"],
 }
 
 
@@ -28,7 +28,8 @@ def map_columns(columns: list[str]) -> dict[str, str]:
     mapping: dict[str, str] = {}
     for target, aliases in ALIASES.items():
         for alias in aliases:
-            if normalize_column_name(alias) in normalized:
-                mapping[target] = normalized[normalize_column_name(alias)]
+            key = normalize_column_name(alias)
+            if key in normalized:
+                mapping[target] = normalized[key]
                 break
     return mapping

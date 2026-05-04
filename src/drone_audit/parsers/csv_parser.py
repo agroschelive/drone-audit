@@ -106,6 +106,10 @@ def parse_csv(path: str | Path) -> ParsedCSV:
     speed_kmh_col = _find_first_column(columns, ["speed_km_h", "speed_kmh", "ground_speed_kmh"])
     valve_col = _find_first_column(columns, ["valve_open", "spray_on", "spraying", "pump_on", "material_on"])
     battery_col = _find_first_column(columns, ["battery_pct", "battery_percent", "battery", "soc", "battery_level"])
+    flow_col = _find_first_column(columns, ["flow_l_min", "flow", "flow_rate", "vazao_l_min", "vazao"])
+    volume_col = _find_first_column(columns, ["volume_total_l", "volume_l", "volume", "total_volume"])
+    swath_col = _find_first_column(columns, ["swath_width_m", "swath", "swath_width", "largura_faixa"])
+    area_col = _find_first_column(columns, ["area_total_ha", "area_ha", "area", "applied_area"])
 
     if lat_col is None or lon_col is None:
         warnings.append("CSV does not contain recognizable latitude/longitude columns.")
@@ -125,7 +129,12 @@ def parse_csv(path: str | Path) -> ParsedCSV:
         out["speed_m_s"] = pd.NA
         warnings.append("CSV does not contain a recognizable speed column.")
 
+    out["spray_on"] = df[valve_col].apply(_normalize_boolean) if valve_col else None
     out["valve_open"] = df[valve_col].apply(_normalize_boolean) if valve_col else None
+    out["flow_l_min"] = _to_numeric(df[flow_col]) if flow_col else pd.NA
+    out["volume_total_l"] = _to_numeric(df[volume_col]) if volume_col else pd.NA
+    out["swath_width_m"] = _to_numeric(df[swath_col]) if swath_col else pd.NA
+    out["area_total_ha"] = _to_numeric(df[area_col]) if area_col else pd.NA
     out["battery_pct"] = _to_numeric(df[battery_col]) if battery_col else pd.NA
     out["source"] = "csv"
 
