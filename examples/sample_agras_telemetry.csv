@@ -1,0 +1,6 @@
+timestamp,latitude,longitude,altitude_m,speed_m_s,battery_pct,spray_on,valve_open,flow_l_min,volume_total_l,swath_width_m,area_total_ha
+2026-01-01T12:00:00Z,-15.0000,-47.0000,10,0.0,100,false,false,0.0,0.0,7.0,0.00
+2026-01-01T12:00:10Z,-15.0001,-47.0001,12,4.0,99,true,true,12.0,2.0,7.0,0.05
+2026-01-01T12:00:20Z,-15.0002,-47.0002,12,4.2,98,true,true,12.5,4.2,7.0,0.10
+2026-01-01T12:00:30Z,-15.00025,-47.00025,11,2.0,97,false,false,0.0,4.2,7.0,0.10
+2026-01-01T12:00:40Z,-15.0003,-47.0003,12,4.1,96,true,true,11.0,6.0,7.0,0.15

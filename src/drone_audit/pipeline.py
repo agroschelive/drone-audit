@@ -14,6 +14,11 @@ from drone_audit.operations import battery_usage_pct, compute_operational_metric
 from drone_audit.parsers.csv_parser import parse_csv
 from drone_audit.parsers.kml_parser import parse_kml
 from drone_audit.parsers.xlsx_parser import parse_xlsx
+from drone_audit.parsers.txt_parser import parse_txt
+from drone_audit.parsers.dat_parser import parse_dat
+from drone_audit.telemetry_normalizer import normalize_telemetry_dataframe
+from drone_audit.spray_detector import create_spray_segments, detect_spray_anomalies
+from drone_audit.agras_metrics import calculate_spray_volume_l, calculate_applied_area_ha, calculate_real_application_rate_l_ha
 from drone_audit.report import build_html_report, write_html_report
 from drone_audit.storage import DEFAULT_IMPORT_INDEX, file_sha256, is_duplicate_file, load_import_index, register_import, save_import_index
 
@@ -37,11 +42,11 @@ def _choose_base_dataframe(kml_df: pd.DataFrame | None, csv_df: pd.DataFrame | N
     return pd.DataFrame()
 
 
-def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=None, import_index_path=None, dedupe: bool = True,
+def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=None, txt_path=None, dat_path=None, import_index_path=None, dedupe: bool = True,
                  operation_name: str | None = None, drone_model: str | None = None, operator: str | None = None,
-                 farm_name: str | None = None, field_name: str | None = None, area_ha: float | None = None, output_path=None) -> PipelineResult:
+                 farm_name: str | None = None, field_name: str | None = None, area_ha: float | None = None, planned_rate_l_ha: float | None = None, swath_width_m: float | None = None, output_path=None) -> PipelineResult:
     warnings: list[str] = []
-    kml_df = csv_df = xlsx_df = None
+    kml_df = csv_df = xlsx_df = txt_df = dat_df = None
     source_type = "unknown"
 
     if kml_path:
@@ -54,6 +59,16 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
         csv_df = parsed.dataframe
         warnings.extend(parsed.warnings)
         source_type = "csv"
+    if txt_path:
+        parsed = parse_txt(txt_path)
+        txt_df = parsed.dataframe
+        warnings.extend(parsed.warnings)
+        source_type = parsed.source_type
+    if dat_path:
+        parsed = parse_dat(dat_path)
+        dat_df = parsed.dataframe
+        warnings.extend(parsed.warnings)
+        source_type = parsed.source_type
     if xlsx_path:
         if dedupe:
             idx_path = Path(import_index_path) if import_index_path else DEFAULT_IMPORT_INDEX
@@ -68,7 +83,10 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
         warnings.extend(parsed.warnings)
         source_type = parsed.source_type
 
-    df = xlsx_df.copy() if xlsx_df is not None else _choose_base_dataframe(kml_df, csv_df)
+    df = txt_df.copy() if txt_df is not None and not txt_df.empty else (xlsx_df.copy() if xlsx_df is not None else _choose_base_dataframe(kml_df, csv_df))
+    if not df.empty:
+        df,_wn=normalize_telemetry_dataframe(df, source_type)
+        warnings.extend(_wn)
     if df.empty:
         warnings.append("No usable data found.")
     else:
@@ -78,17 +96,19 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
 
     time_s = total_time_s(df)
     durations = state_durations_s(df)
-    volume_aplicado_l = float(pd.to_numeric(df.get("volume_l"), errors="coerce").fillna(0).sum()) if "volume_l" in df.columns else None
+    volume_aplicado_l = calculate_spray_volume_l(df)
     battery_usage = battery_usage_pct(df)
-    op_metrics = compute_operational_metrics(durations, area_ha, time_s, battery_usage, volume_aplicado_l)
+    applied_area = calculate_applied_area_ha(df)
+    op_metrics = compute_operational_metrics(durations, area_ha or applied_area, time_s, battery_usage, volume_aplicado_l)
     dq = assess_data_quality(df, source_type) if not df.empty else ["dados_insuficientes_para_estado_operacional"]
     warnings.extend(dq)
 
     metrics = {
         "distance_m": total_distance_m(df), "time_s": time_s, "area_ha": area_ha,
         "productivity_ha_h": productivity_ha_h(area_ha, time_s), "state_durations_s": durations,
-        "battery_usage_pct": battery_usage, "volume_aplicado_l": volume_aplicado_l,
+        "battery_usage_pct": battery_usage, "volume_aplicado_l": volume_aplicado_l, "applied_area_ha": applied_area, "real_rate_l_ha": calculate_real_application_rate_l_ha(volume_aplicado_l, applied_area),
         "operational": op_metrics.__dict__, "operational_alerts": generate_operational_alerts(op_metrics),
+        "spray_segments": [s.__dict__ for s in create_spray_segments(df)], "spray_anomalies": detect_spray_anomalies(df),
         "diagnostics_auto": diagnose_operational({"operational": op_metrics.__dict__}, dq),
         "data_source": source_type, "data_quality": dq,
         "operation_name": operation_name, "drone_model": drone_model, "operator": operator,

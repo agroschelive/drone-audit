@@ -15,6 +15,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--kml", type=Path)
     p.add_argument("--csv", type=Path)
     p.add_argument("--xlsx", type=Path)
+    p.add_argument("--txt", type=Path)
+    p.add_argument("--dat", type=Path)
+    p.add_argument("--planned-rate-l-ha", type=float)
+    p.add_argument("--swath-width-m", type=float)
     p.add_argument("--field-data", type=Path)
     p.add_argument("--area-ha", type=float)
     p.add_argument("--output", type=Path, default=Path("reports/drone_audit_report.html"))
@@ -75,14 +79,18 @@ def build_diagnostics(result: PipelineResult, args: argparse.Namespace) -> dict[
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if not args.kml and not args.csv and not args.xlsx:
-        raise SystemExit("Provide at least --kml, --csv or --xlsx.")
+    if not args.kml and not args.csv and not args.xlsx and not args.txt and not args.dat:
+        raise SystemExit("Provide at least --kml, --csv, --xlsx, --txt or --dat.")
     result = run_pipeline(
         kml_path=args.kml,
         csv_path=args.csv,
         xlsx_path=args.xlsx,
+        txt_path=args.txt,
+        dat_path=args.dat,
         field_data_path=args.field_data,
         area_ha=args.area_ha,
+        planned_rate_l_ha=args.planned_rate_l_ha,
+        swath_width_m=args.swath_width_m,
         output_path=args.output,
         import_index_path=args.import_index,
         dedupe=not args.no_dedupe,

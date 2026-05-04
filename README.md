@@ -173,3 +173,8 @@ Note: this repository currently runs as a local Python pipeline/CLI. The SQL mig
 - Limitações: KML pode não conter telemetria detalhada; algumas métricas podem ser estimadas.
 - Métricas calculadas: tempo total, tempo pulverizando/manobrando/deslocando/parado, eficiência operacional, produtividade, consumo bateria/ha e distância/ha.
 - Próximos passos: importar XLSX e KML reais, validar aliases de colunas reais, conectar com Supabase Storage e preparar integração autorizada futura.
+
+## Telemetria Agras (experimental)
+Suporte adicional para TXT tabular normalizado com sinais `spray_on`, `valve_open`, `pump_on`, `flow_l_min`, `volume_total_l`, `swath_width_m`, `area_total_ha`.
+KML pode ter telemetria limitada. DAT bruto DJI/Agras ainda não é suportado; converta localmente para CSV/TXT legível.
+
