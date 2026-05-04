@@ -40,3 +40,27 @@ def test_ci_and_pyproject_include_tooling():
     assert "dev =" in pyproject
     assert "ruff check" in ci
     assert "--cov=drone_audit" in ci
+
+
+def test_standalone_prototype_removed_and_roadmap_governance_guardrails():
+    assert not Path("drone_audit_pipeline.py").exists()
+
+    roadmap_path = Path("docs/roadmap-backlog.md")
+    assert roadmap_path.exists()
+    text = roadmap_path.read_text(encoding="utf-8")
+    lower = text.lower()
+
+    assert "# roadmap backlog" in lower
+    assert "roadmap de issues" not in lower
+    assert "curto prazo" not in lower
+    assert "médio prazo" not in lower
+    assert "longo prazo" not in lower
+    assert "arquivos originais" not in lower
+
+    assert "locally" in lower
+    assert "must not be committed" in lower
+
+    assert "implement dat" not in lower
+    assert "dat support already exists" not in lower
+    assert "research dat support" in lower
+    assert "before any implementation" in lower
