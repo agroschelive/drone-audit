@@ -9,7 +9,7 @@ def test_pipeline_generates_report(tmp_path):
     assert result.metrics["distance_m"] > 0
     html = output.read_text(encoding="utf-8")
     assert "Drone Audit - Relatório Auxiliar" in html
-    assert "Avisos de processamento" in html
+    assert "Avisos técnicos" in html
 
 
 def test_pipeline_handles_corrupted_rows_and_invalid_coordinates(tmp_path):
@@ -56,7 +56,7 @@ def test_corrupted_csv_warnings_are_rendered_in_html_report(tmp_path):
     run_pipeline(csv_path=csv_path, output_path=output)
 
     html = output.read_text(encoding="utf-8")
-    assert "Avisos de processamento" in html
+    assert "Avisos técnicos" in html
     assert "CSV contains" in html
     assert "dataset may be incomplete" in html
     assert "invalid timestamps" in html
@@ -84,3 +84,20 @@ def test_report_shows_all_area_variants(tmp_path):
     assert "Área informada" in html
     assert "Área calculada" in html
     assert "Área usada nos cálculos" in html
+
+
+def test_pipeline_csv_plus_dat_keeps_csv_source(tmp_path):
+    csv_path = tmp_path / "s.csv"
+    csv_path.write_text("timestamp,latitude,longitude\n2026-01-01T00:00:00Z,-23,-46\n2026-01-01T00:00:10Z,-23,-45.999", encoding="utf-8")
+    dat_path = tmp_path / "a.dat"
+    dat_path.write_bytes(b"fake")
+    result = run_pipeline(csv_path=csv_path, dat_path=dat_path)
+    assert result.metrics["data_source"] == "csv"
+
+def test_report_sections_rendered(tmp_path):
+    output = tmp_path / "r.html"
+    run_pipeline(csv_path=EXAMPLES / "sample_flight.csv", output_path=output)
+    html = output.read_text(encoding="utf-8")
+    assert "Confiabilidade dos dados" in html
+    assert "Limitações da análise" in html
+    assert "Avisos técnicos" in html

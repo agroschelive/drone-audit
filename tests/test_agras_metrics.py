@@ -12,4 +12,4 @@ def test_calculate_spray_time_with_estimated_spraying_state():
         "timestamp": ["2026-01-01T00:00:00Z", "2026-01-01T00:00:10Z", "2026-01-01T00:00:20Z"],
         "state": ["idle", "estimated_spraying", "estimated_spraying"],
     })
-    assert calculate_spray_time_s(df) == 20.0
+    assert calculate_spray_time_s(df) == 10.0

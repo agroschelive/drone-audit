@@ -2,6 +2,7 @@ from __future__ import annotations
 import pandas as pd
 from drone_audit.agras_telemetry import AgrasSpraySegment
 from drone_audit.metrics import calculate_segment_distances
+from drone_audit.time_utils import calculate_row_durations_s
 
 
 def _as_bool(value):
@@ -43,10 +44,10 @@ def create_spray_segments(df):
         return []
     d = df.copy()
     d["_volume_increase"] = (
-        pd.to_numeric(d.get("volume_total_l"), errors="coerce").diff().fillna(0) > 0.001
+        pd.to_numeric(d.get("volume_total_l", pd.Series(index=d.index, dtype="float64")), errors="coerce").diff().fillna(0) > 0.001
     )
     d["_area_increase"] = (
-        pd.to_numeric(d.get("area_total_ha"), errors="coerce").diff().fillna(0) > 0.00001
+        pd.to_numeric(d.get("area_total_ha", pd.Series(index=d.index, dtype="float64")), errors="coerce").diff().fillna(0) > 0.00001
     )
     d["_spray"] = d.apply(detect_spray_on, axis=1).replace({None: False}).astype(bool)
     d["_dist"] = calculate_segment_distances(d)
@@ -111,14 +112,10 @@ def detect_spray_anomalies(df):
         valid_rows = int(d["_spray"].notna().sum())
         point_ratio = (float(moving_without_spray.sum()) / valid_rows) if valid_rows > 0 else 0.0
         time_ratio = 0.0
-        if "timestamp" in d.columns:
-            ts = pd.to_datetime(d["timestamp"], errors="coerce", utc=True)
-            if ts.notna().sum() >= 2:
-                dt = ts.sort_values().diff().dt.total_seconds().clip(lower=0, upper=600).fillna(0)
-                row_durations = dt.reindex(d.index).fillna(0)
-                total_time = float(row_durations.sum())
-                moving_time = float(row_durations[moving_without_spray].sum())
-                time_ratio = (moving_time / total_time) if total_time > 0 else 0.0
+        row_durations = calculate_row_durations_s(d)
+        total_time = float(row_durations.sum())
+        moving_time = float(row_durations[moving_without_spray].sum())
+        time_ratio = (moving_time / total_time) if total_time > 0 else 0.0
         if point_ratio > 0.2 or time_ratio > 0.2:
             alerts.append({"code": "deslocando_sem_pulverizar"})
     if (d["_volume_increase"] & (speed < 0.3)).any():
