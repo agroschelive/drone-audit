@@ -77,3 +77,5 @@ examples/real_samples/*Farm*
 !examples/real_samples/*synthetic*.csv
 !examples/real_samples/*synthetic*.kml
 !examples/real_samples/*synthetic*.txt
+
+.drone_audit/

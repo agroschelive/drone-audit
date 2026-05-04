@@ -2,33 +2,32 @@ from __future__ import annotations
 
 import pandas as pd
 
+from drone_audit.spray_detector import detect_spray_on
+
 
 def classify_states(
     df: pd.DataFrame,
-    moving_speed_m_s: float = 1.0,
+    moving_speed_m_s: float = 0.5,
     spray_speed_m_s: float = 0.8,
 ) -> pd.DataFrame:
-    """Classify a minimal operational state.
-
-    This is a transparent heuristic, not a definitive proof of real application.
-    """
     out = df.copy()
     if "speed_m_s" not in out.columns:
         out["speed_m_s"] = pd.NA
-    if "valve_open" not in out.columns:
-        out["valve_open"] = None
 
-    states: list[str] = []
     speeds = pd.to_numeric(out["speed_m_s"], errors="coerce").fillna(0.0)
+    states: list[str] = []
 
-    for idx, speed in speeds.items():
-        valve_open = out.loc[idx, "valve_open"]
-        if valve_open == True and float(speed) >= spray_speed_m_s:
+    for i, row in out.iterrows():
+        spray = detect_spray_on(row)
+        speed = float(speeds.loc[i])
+        if spray is True and speed >= spray_speed_m_s:
             states.append("estimated_spraying")
-        elif float(speed) >= moving_speed_m_s:
+        elif speed <= 0.3:
+            states.append("idle")
+        elif speed > moving_speed_m_s:
             states.append("moving")
         else:
-            states.append("idle")
+            states.append("unknown")
 
     out["state"] = states
     return out
