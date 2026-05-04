@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import json
 from pathlib import Path
 
@@ -51,7 +51,6 @@ def telemetry_to_eventos_voo(points: list[TelemetryPoint], voo_id: str) -> list[
 
     for i in range(len(points) - 1):
         point = points[i]
-        nxt = points[i + 1]
         start = ts[i]
         end = ts[i + 1]
         duracao = max(0, int((end - start).total_seconds())) if pd.notna(start) and pd.notna(end) else 0
