@@ -8,6 +8,7 @@ import pandas as pd
 from drone_audit.classifier import classify_states
 from drone_audit.field_data import load_field_data
 from drone_audit.metrics import derive_speed_from_track, productivity_ha_h, state_durations_s, total_distance_m, total_time_s
+from drone_audit.operations import battery_usage_pct, compute_operational_metrics, generate_operational_alerts
 from drone_audit.parsers.csv_parser import parse_csv
 from drone_audit.parsers.kml_parser import parse_kml
 from drone_audit.report import build_html_report, write_html_report
@@ -64,12 +65,21 @@ def run_pipeline(
         df = classify_states(df)
 
     time_s = total_time_s(df)
+    durations = state_durations_s(df)
+    volume_aplicado_l = float(pd.to_numeric(df.get("volume_aplicado"), errors="coerce").fillna(0).sum()) if "volume_aplicado" in df.columns else None
+    battery_usage = battery_usage_pct(df)
+    op_metrics = compute_operational_metrics(durations, area_ha, time_s, battery_usage, volume_aplicado_l)
+
     metrics = {
         "distance_m": total_distance_m(df),
         "time_s": time_s,
         "area_ha": area_ha,
         "productivity_ha_h": productivity_ha_h(area_ha, time_s),
-        "state_durations_s": state_durations_s(df),
+        "state_durations_s": durations,
+        "battery_usage_pct": battery_usage,
+        "volume_aplicado_l": volume_aplicado_l,
+        "operational": op_metrics.__dict__,
+        "operational_alerts": generate_operational_alerts(op_metrics),
     }
 
     field_data = load_field_data(field_data_path)
