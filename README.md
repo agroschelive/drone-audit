@@ -152,3 +152,15 @@ For GitHub publication instructions, see [`docs/github-create-step-by-step.md`](
 ## Trademark notice
 
 DJI and Agras are trademarks of their respective owners. This project is not affiliated with, sponsored by, approved by or endorsed by DJI. The use of these names is descriptive only, to indicate technical compatibility with exported files from related platforms.
+
+## DJI Agras operational audit foundation (new)
+
+This version adds a foundational layer for operational KPI auditing:
+
+- Operational metrics utilities for time slicing (spraying, maneuvering, moving, idle), operational efficiency, productivity, battery consumption per hectare and real application rate.
+- Automatic operational diagnostics with messages for inefficient maneuvering, low spraying time, low efficiency and potential route/refill issues.
+- Extended report layout with an operational dashboard and mission summary section.
+- A future-ready telemetry importer structure in `src/drone_audit/lib/importers` with generic CSV/JSON parsing and conversion to `eventos_voo` records.
+- SQL migration draft in `db/migrations/20260504_operational_audit_schema.sql` containing core entities (`clientes`, `fazendas`, `talhoes`, `operadores`, `drones`, `baterias`, `missoes`, `voos`, `eventos_voo`, etc.).
+
+Note: this repository currently runs as a local Python pipeline/CLI. The SQL migration is prepared for future Supabase/Postgres integration.

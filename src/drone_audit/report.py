@@ -38,6 +38,10 @@ def _map_html(df: pd.DataFrame) -> str:
     return fmap._repr_html_()
 
 
+
+def _metric_card(title: str, value: Any, unit: str = "") -> str:
+    return f"<div class='card'><h3>{escape(title)}</h3><p>{_format_number(value)} {escape(unit)}</p></div>"
+
 def build_html_report(
     df: pd.DataFrame,
     metrics: dict[str, Any],
@@ -63,6 +67,23 @@ def build_html_report(
     )
     warning_list = f"<ul>{warning_items}</ul>" if warning_items else "<p>Nenhum aviso de processamento.</p>"
 
+    op = metrics.get("operational") or {}
+    op_alerts = metrics.get("operational_alerts") or []
+    op_alert_items = "".join(f"<li>{escape(str(a))}</li>" for a in op_alerts)
+    op_alert_list = f"<ul>{op_alert_items}</ul>" if op_alert_items else "<p>Sem alertas operacionais automáticos.</p>"
+
+    cards = "".join([
+        _metric_card("Área aplicada", metrics.get("area_ha"), "ha"),
+        _metric_card("Tempo total", op.get("tempo_total_s"), "s"),
+        _metric_card("Tempo pulverizando", op.get("tempo_pulverizando_s"), "s"),
+        _metric_card("Tempo manobrando", op.get("tempo_manobrando_s"), "s"),
+        _metric_card("Tempo parado", op.get("tempo_parado_s"), "s"),
+        _metric_card("Eficiência operacional", op.get("eficiencia_operacional_pct"), "%"),
+        _metric_card("Produtividade real", op.get("produtividade_real_ha_h"), "ha/h"),
+        _metric_card("Consumo bateria/ha", op.get("consumo_bateria_ha_pct"), "%/ha"),
+        _metric_card("Taxa real", op.get("taxa_real_l_ha"), "L/ha"),
+    ])
+
     return f"""<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -72,6 +93,10 @@ def build_html_report(
     body {{ font-family: Arial, sans-serif; margin: 32px; color: #222; }}
     h1, h2 {{ color: #113322; }}
     .warning {{ background: #fff8d8; padding: 12px; border: 1px solid #e8d26a; }}
+    .cards {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 10px; margin-top: 10px; }}
+    .card {{ border: 1px solid #ddd; border-radius: 8px; padding: 10px; background: #fafafa; }}
+    .card h3 {{ font-size: 14px; margin: 0; color: #224; }}
+    .card p {{ font-size: 18px; margin: 6px 0 0; }}
     table {{ border-collapse: collapse; width: 100%; margin: 12px 0; }}
     th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
     th {{ background: #f2f2f2; }}
@@ -82,6 +107,9 @@ def build_html_report(
   <div class="warning">
     Este relatório é auxiliar e experimental. Não substitui interpretação profissional, validação em campo ou responsabilidade técnica.
   </div>
+
+  <h2>Dashboard operacional</h2>
+  <div class="cards">{cards}</div>
 
   <h2>Resumo</h2>
   <table>
@@ -102,10 +130,30 @@ def build_html_report(
   <h2>Avisos de processamento</h2>
   {warning_list}
 
+  <h2>Diagnóstico automático</h2>
+  {op_alert_list}
+
   <h2>Dados complementares</h2>
   <table>
     <tr><th>Campo</th><th>Valor</th></tr>
     {field_rows}
+  </table>
+
+  <h2>Relatório por missão</h2>
+  <table>
+    <tr><th>Campo</th><th>Valor</th></tr>
+    <tr><td>Cliente</td><td>{escape(str(field_data.get("cliente", "não informado")))}</td></tr>
+    <tr><td>Fazenda</td><td>{escape(str(field_data.get("fazenda", "não informado")))}</td></tr>
+    <tr><td>Talhão</td><td>{escape(str(field_data.get("talhao", "não informado")))}</td></tr>
+    <tr><td>Drone</td><td>{escape(str(field_data.get("drone", "não informado")))}</td></tr>
+    <tr><td>Operador</td><td>{escape(str(field_data.get("operador", "não informado")))}</td></tr>
+    <tr><td>Bateria</td><td>{escape(str(field_data.get("bateria", "não informado")))}</td></tr>
+  </table>
+
+  <h2>Tabela de eventos (estimada por estado)</h2>
+  <table>
+    <tr><th>Evento</th><th>Duração (s)</th></tr>
+    {state_rows}
   </table>
 
   <h2>Mapa</h2>
