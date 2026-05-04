@@ -4,7 +4,10 @@ import argparse
 import json
 from pathlib import Path
 
+import pandas as pd
+
 from drone_audit.pipeline import PipelineResult, run_pipeline
+from drone_audit.schema import NORMALIZED_COLUMNS, REQUIRED_POSITION_COLUMNS
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -27,23 +30,68 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def build_diagnostics(result: PipelineResult, args: argparse.Namespace) -> dict[str, object]:
-    return {
-        "rows": int(len(result.dataframe)),
-        "columns": [str(c) for c in result.dataframe.columns],
-        "recognized_inputs": {"kml": bool(args.kml), "csv": bool(args.csv), "xlsx": bool(args.xlsx), "field_data": bool(args.field_data)},
-        "data_quality": result.metrics.get("data_quality", []),
+    df = result.dataframe
+    columns = [str(c) for c in df.columns]
+
+    diagnostics: dict[str, object] = {
+        "rows": int(len(df)),
+        "columns": columns,
+        "recognized_inputs": {
+            "kml": bool(args.kml),
+            "csv": bool(args.csv),
+            "field_data": bool(args.field_data),
+        },
+        "valid_coordinates": 0,
+        "valid_timestamps": 0,
+        "has_speed": "speed_m_s" in df.columns,
+        "has_valve_open": "valve_open" in df.columns,
+        "has_battery": any(c in df.columns for c in ["battery_pct", "battery_start_pct", "battery_end_pct"]),
+        "states": [],
         "source": result.metrics.get("data_source"),
     }
+
+    diagnostics["available_normalized_columns"] = [c for c in NORMALIZED_COLUMNS if c in df.columns]
+    diagnostics["missing_normalized_columns"] = [c for c in NORMALIZED_COLUMNS if c not in df.columns]
+
+    if set(REQUIRED_POSITION_COLUMNS).issubset(df.columns):
+        diagnostics["valid_coordinates"] = int(df[["latitude", "longitude"]].notna().all(axis=1).sum())
+
+    ts_col = "timestamp" if "timestamp" in df.columns else ("timestamp_start" if "timestamp_start" in df.columns else None)
+    if ts_col:
+        diagnostics["valid_timestamps"] = int(pd.to_datetime(df[ts_col], errors="coerce", utc=True).notna().sum())
+
+    if "state" in df.columns:
+        diagnostics["states"] = sorted(str(s) for s in df["state"].dropna().unique())
+
+    diagnostics["data_quality"] = {
+        "rows": int(len(df)),
+        "valid_coordinates": int(diagnostics["valid_coordinates"]),
+        "valid_timestamps": int(diagnostics["valid_timestamps"]),
+        "warnings_count": int(len(result.warnings)),
+        "warnings": result.metrics.get("data_quality", []),
+    }
+    return diagnostics
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if not args.kml and not args.csv and not args.xlsx:
         raise SystemExit("Provide at least --kml, --csv or --xlsx.")
-    result = run_pipeline(kml_path=args.kml, csv_path=args.csv, xlsx_path=args.xlsx, field_data_path=args.field_data,
-                          area_ha=args.area_ha, output_path=args.output, import_index_path=args.import_index,
-                          dedupe=not args.no_dedupe, operation_name=args.operation_name, drone_model=args.drone_model,
-                          operator=args.operator, farm_name=args.farm_name, field_name=args.field_name)
+    result = run_pipeline(
+        kml_path=args.kml,
+        csv_path=args.csv,
+        xlsx_path=args.xlsx,
+        field_data_path=args.field_data,
+        area_ha=args.area_ha,
+        output_path=args.output,
+        import_index_path=args.import_index,
+        dedupe=not args.no_dedupe,
+        operation_name=args.operation_name,
+        drone_model=args.drone_model,
+        operator=args.operator,
+        farm_name=args.farm_name,
+        field_name=args.field_name,
+    )
     payload = {"metrics": result.metrics, "warnings": result.warnings, "report": str(result.report_path)}
     if args.diagnose:
         payload["diagnostics"] = build_diagnostics(result, args)
