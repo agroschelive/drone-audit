@@ -68,6 +68,12 @@ def build_html_report(
     warning_list = f"<ul>{warning_items}</ul>" if warning_items else "<p>Nenhum aviso de processamento.</p>"
 
     op = metrics.get("operational") or {}
+
+    source_info = metrics.get("data_source", "não informado")
+    quality = metrics.get("data_quality", [])
+    quality_html = "<ul>" + "".join(f"<li>{escape(str(w))}</li>" for w in quality) + "</ul>" if quality else "<p>sem avisos</p>"
+    auto_diag = metrics.get("diagnostics_auto", [])
+    auto_diag_html = "<ul>" + "".join(f"<li>{escape(str(a.get('code')))}: {escape(str(a.get('message')))}</li>" for a in auto_diag) + "</ul>" if auto_diag else "<p>não disponível</p>"
     op_alerts = metrics.get("operational_alerts") or []
     op_alert_items = "".join(f"<li>{escape(str(a))}</li>" for a in op_alerts)
     op_alert_list = f"<ul>{op_alert_items}</ul>" if op_alert_items else "<p>Sem alertas operacionais automáticos.</p>"
@@ -112,6 +118,9 @@ def build_html_report(
   <div class="cards">{cards}</div>
 
   <h2>Resumo</h2>
+  <p><strong>Origem dos dados:</strong> {source_info}</p>
+  <p><strong>Qualidade dos dados:</strong>{quality_html}</p>
+  <p><strong>Diagnóstico automático:</strong>{auto_diag_html}</p>
   <table>
     <tr><th>Métrica</th><th>Valor</th></tr>
     <tr><td>Pontos analisados</td><td>{len(df)}</td></tr>
