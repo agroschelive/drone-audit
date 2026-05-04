@@ -36,3 +36,12 @@ See also:
 - [SECURITY.md](../SECURITY.md)
 - [docs/expected-real-files.md](expected-real-files.md)
 - [docs/audit-rules.md](audit-rules.md)
+
+
+## Related docs
+
+- [docs/support-matrix.md](support-matrix.md)
+- [docs/sanitization.md](sanitization.md)
+- [docs/local-real-file-validation.md](local-real-file-validation.md)
+- [docs/quality-gates.md](quality-gates.md)
+- [docs/release-checklist.md](release-checklist.md)

@@ -31,3 +31,13 @@ pytest -q --cov=drone_audit --cov-report=term-missing
 - Do not implement DAT support without real validated files and tests.
 - Keep the project alpha and experimental.
 - Preserve current behavior unless the PR explicitly states otherwise.
+
+
+## Documentation and safety references
+
+- [docs/quality-gates.md](docs/quality-gates.md)
+- [docs/release-checklist.md](docs/release-checklist.md)
+- [docs/local-real-file-validation.md](docs/local-real-file-validation.md)
+- [docs/sanitization.md](docs/sanitization.md)
+
+Contributors must not attach real files to issues or pull requests. Use synthetic or safely sanitized samples only.

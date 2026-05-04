@@ -57,6 +57,26 @@ Do not publish real client, property, or operator data. Do not publish real coor
 
 Current operational states are heuristic and experimental. Classification rules are documented in [docs/audit-rules.md](docs/audit-rules.md). The project does not provide definitive aircraft, operation, or real spraying diagnosis.
 
+
+## Project documentation
+
+- [SECURITY.md](SECURITY.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CHANGELOG.md](CHANGELOG.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/audit-rules.md](docs/audit-rules.md)
+- [docs/support-matrix.md](docs/support-matrix.md)
+- [docs/sanitization.md](docs/sanitization.md)
+- [docs/expected-real-files.md](docs/expected-real-files.md)
+- [docs/local-real-file-validation.md](docs/local-real-file-validation.md)
+- [docs/release-checklist.md](docs/release-checklist.md)
+- [docs/quality-gates.md](docs/quality-gates.md)
+- [docs/roadmap-backlog.md](docs/roadmap-backlog.md)
+
+## Alpha readiness
+
+The repository is prepared for safe local validation. Real files must remain local. Public examples must be synthetic or safely sanitized. The project does not provide definitive aircraft, operation or spraying diagnosis.
+
 ## Installation
 
 ```bash
