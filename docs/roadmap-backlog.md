@@ -1,73 +1,32 @@
-# Roadmap de Issues
+# Roadmap backlog
 
-Backlog proposto organizado por horizonte de entrega.
+Backlog organized by delivery horizon. This roadmap is aspirational and does not imply current support for future items.
 
-## Curto Prazo (0–3 meses)
+Real flight files used for validation must be locally provided or locally validated real files only. Raw real files must remain local and must not be committed to this repository. Public examples must be synthetic or safely sanitized.
 
-- **Validar parser CSV com arquivos originais**  
-  Receber arquivos CSV originais, rodar parser, validar métricas e documentar resultados.  
-  **Labels:** `parser`, `tests`, `data-validation`
+The project currently provides telemetry normalization, metrics, and reporting utilities for supported inputs. It does not provide definitive aircraft, operation, or spraying diagnosis.
 
-- **Validar parser KML com arquivos originais**  
-  Rodar parser KML, verificar mapa no relatório HTML e comparar métricas.  
-  **Labels:** `parser`, `report`, `data-validation`
+## Short term (0–3 months)
 
-- **Criar modelo central FlightData**  
-  Definir classe FlightData para padronizar entrada de dados e cálculos de métricas.  
-  **Labels:** `infra`, `parser`
+- Validate CSV parser with locally provided real files
+- Validate KML parser with locally provided real files
+- Improve normalized telemetry model
+- Expand automated tests
+- Document initial compatibility
 
-- **Expandir testes automatizados**  
-  Criar testes pytest com arquivos originais e aumentar cobertura.  
-  **Labels:** `tests`, `infra`
+## Medium term (3–9 months)
 
-- **Documentar compatibilidade inicial**  
-  Atualizar README com formatos suportados e exemplos anonimizados.  
-  **Labels:** `documentation`
+- Research DAT support using locally validated real files, tests, and documentation before any implementation
+- Evaluate TXT/log exports using locally validated real files
+- Improve HTML reports
+- Improve package/API structure
+- Strengthen CI/CD and documentation
 
-## Médio Prazo (3–9 meses)
+## Long term (9–18 months)
 
-- **Implementar parser DAT**  
-  Mapear estrutura dos arquivos DAT, implementar parser inicial e documentar diferenças entre versões.  
-  **Labels:** `parser`, `data-validation`, `documentation`
-
-- **Gerar relatórios HTML/PDF avançados**  
-  Criar relatórios com mapas, métricas detalhadas e exportação em PDF.  
-  **Labels:** `report`, `infra`
-
-- **Estrutura de API ou biblioteca**  
-  Criar API ou pacote Python para uso externo.  
-  **Labels:** `infra`, `integration`
-
-- **Configurar pipeline CI/CD**  
-  Automatizar testes e validação de contribuições com GitHub Actions.  
-  **Labels:** `infra`, `tests`
-
-- **Início de comunidade ativa**  
-  Divulgar projeto, abrir issues públicas e exemplos anonimizados.  
-  **Labels:** `community`, `documentation`
-
-## Longo Prazo (9–18 meses)
-
-- **Integração com plataformas agrícolas**  
-  Conectar com SmartFarm, FieldView e outras plataformas para ingestão de dados.  
-  **Labels:** `integration`, `community`
-
-- **Dashboards interativos**  
-  Criar dashboards web para múltiplos voos, com banco de dados central.  
-  **Labels:** `report`, `infra`, `visualization`
-
-- **Análises avançadas**  
-  Implementar cálculos de eficiência de pulverização, consumo energético e manutenção preventiva.  
-  **Labels:** `analysis`, `infra`
-
-- **Suporte a múltiplos fabricantes**  
-  Expandir parsers para além da DJI, cobrindo outros drones agrícolas.  
-  **Labels:** `parser`, `integration`
-
-- **Serviço web escalável**  
-  Transformar pipeline em serviço web capaz de processar centenas de voos em lote.  
-  **Labels:** `infra`, `scalability`
-
-- **Consolidação da comunidade open-source**  
-  Atrair colaboradores ativos, organizar contribuições e manter governança.  
-  **Labels:** `community`
+- Agricultural platform integrations
+- Interactive dashboards
+- Advanced operational analysis
+- Multi-manufacturer support
+- Scalable web service
+- Open-source community consolidation
