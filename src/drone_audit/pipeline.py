@@ -18,7 +18,7 @@ from drone_audit.parsers.txt_parser import parse_txt
 from drone_audit.parsers.dat_parser import parse_dat
 from drone_audit.telemetry_normalizer import normalize_telemetry_dataframe
 from drone_audit.spray_detector import create_spray_segments, detect_spray_anomalies
-from drone_audit.agras_metrics import calculate_spray_volume_l, calculate_applied_area_ha, calculate_real_application_rate_l_ha
+from drone_audit.agras_metrics import calculate_spray_volume_l, calculate_applied_area_ha, calculate_real_application_rate_l_ha, calculate_flow_stats, calculate_swath_width_stats, calculate_battery_per_ha, calculate_spray_time_s, calculate_non_spray_moving_time_s, calculate_idle_time_s
 from drone_audit.report import build_html_report, write_html_report
 from drone_audit.storage import DEFAULT_IMPORT_INDEX, file_sha256, is_duplicate_file, load_import_index, register_import, save_import_index
 
@@ -102,13 +102,23 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
     dq = assess_data_quality(df, source_type) if not df.empty else ["dados_insuficientes_para_estado_operacional"]
     warnings.extend(dq)
 
+    spray_anomalies = detect_spray_anomalies(df)
+    flow_stats = calculate_flow_stats(df)
+    swath_width_stats = calculate_swath_width_stats(df)
+    battery_per_ha_pct = calculate_battery_per_ha(df, area_ha or applied_area)
+    spray_time_s = calculate_spray_time_s(df)
+    non_spray_moving_time_s = calculate_non_spray_moving_time_s(df)
+    idle_time_s = calculate_idle_time_s(df)
+
     metrics = {
         "distance_m": total_distance_m(df), "time_s": time_s, "area_ha": area_ha,
         "productivity_ha_h": productivity_ha_h(area_ha, time_s), "state_durations_s": durations,
         "battery_usage_pct": battery_usage, "volume_aplicado_l": volume_aplicado_l, "applied_area_ha": applied_area, "real_rate_l_ha": calculate_real_application_rate_l_ha(volume_aplicado_l, applied_area),
         "operational": op_metrics.__dict__, "operational_alerts": generate_operational_alerts(op_metrics),
-        "spray_segments": [s.__dict__ for s in create_spray_segments(df)], "spray_anomalies": detect_spray_anomalies(df),
-        "diagnostics_auto": diagnose_operational({"operational": op_metrics.__dict__}, dq),
+        "spray_segments": [s.__dict__ for s in create_spray_segments(df)], "spray_anomalies": spray_anomalies,
+        "flow_stats": flow_stats, "swath_width_stats": swath_width_stats, "battery_per_ha_pct": battery_per_ha_pct,
+        "spray_time_s": spray_time_s, "non_spray_moving_time_s": non_spray_moving_time_s, "idle_time_s": idle_time_s,
+        "diagnostics_auto": diagnose_operational({"operational": op_metrics.__dict__, "flow_stats": flow_stats, "battery_per_ha_pct": battery_per_ha_pct, "real_rate_l_ha": calculate_real_application_rate_l_ha(volume_aplicado_l, applied_area)}, dq, spray_anomalies, planned_rate_l_ha),
         "data_source": source_type, "data_quality": dq,
         "operation_name": operation_name, "drone_model": drone_model, "operator": operator,
         "farm_name": farm_name, "field_name": field_name,
