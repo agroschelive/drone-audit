@@ -46,8 +46,55 @@ SENSITIVE_EXACT_NAMES = {
     "talhao",
     "boundary",
 }
-LOCATION_NAMES = {"latitude", "lat", "gps_lat", "longitude", "lon", "lng", "gps_lon"}
-TIMESTAMP_NAMES = {"timestamp", "time", "datetime", "record_time", "date_time"}
+LOCATION_NAMES = {
+    "latitude",
+    "lat",
+    "gps_lat",
+    "longitude",
+    "lon",
+    "lng",
+    "gps_lon",
+    "gps_latitude",
+    "gps_longitude",
+    "latitude_deg",
+    "longitude_deg",
+    "lat_deg",
+    "lon_deg",
+    "lng_deg",
+    "flight_lat",
+    "flight_lon",
+    "flight_lng",
+    "aircraft_lat",
+    "aircraft_lon",
+    "aircraft_lng",
+}
+TIMESTAMP_NAMES = {
+    "timestamp",
+    "time",
+    "datetime",
+    "record_time",
+    "date_time",
+    "gps_time",
+    "flight_time",
+    "recorded_at",
+    "created_at",
+    "updated_at",
+    "started_at",
+    "ended_at",
+    "date",
+    "data",
+    "hora",
+    "data_hora",
+}
+RELATIVE_DURATION_NAMES = {
+    "time_s",
+    "elapsed_s",
+    "elapsed_time_s",
+    "duration_s",
+    "spray_time_s",
+    "moving_time_s",
+    "idle_time_s",
+}
 
 
 def _normalize_parts(name: str) -> list[str]:
@@ -72,8 +119,24 @@ def _is_sensitive_column(name: str) -> bool:
     return any(part in SENSITIVE_EXACT_NAMES for part in parts)
 
 
+def _is_coordinate_column(name: str) -> bool:
+    normalized = _normalized_name(name)
+    if normalized in LOCATION_NAMES:
+        return True
+
+    parts = _normalize_parts(name)
+    return any(part in {"latitude", "longitude", "lat", "lon", "lng"} for part in parts)
+
+
 def _timestamp_columns(columns: list[str]) -> list[str]:
-    return [col for col in columns if _normalized_name(col) in TIMESTAMP_NAMES]
+    selected: list[str] = []
+    for col in columns:
+        normalized = _normalized_name(col)
+        if normalized in RELATIVE_DURATION_NAMES:
+            continue
+        if normalized in TIMESTAMP_NAMES:
+            selected.append(col)
+    return selected
 
 
 def sanitize_csv_dataframe(
@@ -88,8 +151,7 @@ def sanitize_csv_dataframe(
     coordinate_cols: list[str] = []
 
     for col in sanitized.columns:
-        normalized = _normalized_name(col)
-        if normalized in LOCATION_NAMES:
+        if _is_coordinate_column(col):
             coordinate_cols.append(col)
             continue
         if _is_sensitive_column(col):
