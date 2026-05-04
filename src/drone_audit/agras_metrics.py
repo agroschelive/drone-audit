@@ -3,8 +3,25 @@ from __future__ import annotations
 import pandas as pd
 
 from drone_audit.metrics import calculate_segment_distances
-from drone_audit.states import IDLE_STATES, SPRAYING_STATES, STATE_IDLE, STATE_MOVING, STATE_SPRAYING, TRANSIT_STATES
-from drone_audit.time_utils import sum_states_time_s
+from drone_audit.spray_detector import detect_spray_on
+from drone_audit.states import (
+    IDLE_STATES,
+    SPRAYING_STATES,
+    STATE_IDLE,
+    STATE_MOVING,
+    STATE_SPRAYING,
+    TRANSIT_STATES,
+)
+from drone_audit.time_utils import calculate_row_durations_s, sum_states_time_s
+
+
+def spray_mask(df: pd.DataFrame) -> pd.Series | None:
+    if "state" in df.columns and df["state"].astype("string").eq("estimated_spraying").any():
+        return df["state"].astype("string").eq("estimated_spraying")
+    cols = {"spray_on", "valve_open", "pump_on", "flow_l_min", "volume_total_l", "area_total_ha"}
+    if any(c in df.columns for c in cols):
+        return df.apply(detect_spray_on, axis=1).fillna(False).astype(bool)
+    return None
 
 
 def calculate_spray_volume_l(df):
@@ -12,13 +29,13 @@ def calculate_spray_volume_l(df):
         v = pd.to_numeric(df["volume_total_l"], errors="coerce").dropna()
         if len(v) >= 2:
             return float(v.iloc[-1] - v.iloc[0])
-
     if {"flow_l_min", "timestamp"}.issubset(df.columns):
         flow = pd.to_numeric(df["flow_l_min"], errors="coerce").fillna(0)
-        ts = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
-        dt_min = ts.diff().dt.total_seconds().fillna(0) / 60
-        return float((flow * dt_min).sum())
-
+        dt_min = calculate_row_durations_s(df) / 60.0
+        mask = spray_mask(df)
+        if mask is None:
+            mask = flow > 0
+        return float((flow[mask] * dt_min[mask]).sum())
     return None
 
 
@@ -27,14 +44,18 @@ def calculate_applied_area_ha(df):
         a = pd.to_numeric(df["area_total_ha"], errors="coerce").dropna()
         if len(a) >= 2:
             return float(a.iloc[-1] - a.iloc[0])
-
     if "swath_width_m" in df:
-        dist = float(calculate_segment_distances(df).sum())
-        sw = pd.to_numeric(df["swath_width_m"], errors="coerce").mean()
+        mask = spray_mask(df)
+        if mask is None or not mask.any():
+            return None
+        dist = float(calculate_segment_distances(df)[mask].sum())
+        sw = pd.to_numeric(df.loc[mask, "swath_width_m"], errors="coerce").mean()
         if pd.notna(sw):
             return float(dist * sw / 10000)
-
     return None
+
+
+# keep rest
 
 
 def calculate_real_application_rate_l_ha(volume_l, area_ha):
@@ -90,18 +111,12 @@ def calculate_idle_time_s(df):
 
 
 def calculate_operational_efficiency_pct(spray_time_s, total_time_s):
-    if not total_time_s:
-        return None
-    return float((spray_time_s / total_time_s) * 100)
+    return None if not total_time_s else float((spray_time_s / total_time_s) * 100)
 
 
 def calculate_productivity_ha_h(area_ha, total_time_s):
-    if not area_ha or not total_time_s:
-        return None
-    return float(area_ha / (total_time_s / 3600))
+    return None if (not area_ha or not total_time_s) else float(area_ha / (total_time_s / 3600))
 
 
 def calculate_spraying_productivity_ha_h(area_ha, spray_time_s):
-    if not area_ha or not spray_time_s:
-        return None
-    return float(area_ha / (spray_time_s / 3600))
+    return None if (not area_ha or not spray_time_s) else float(area_ha / (spray_time_s / 3600))

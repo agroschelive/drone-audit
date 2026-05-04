@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 import pandas as pd
+from drone_audit.time_utils import total_duration_from_rows_s, calculate_row_durations_s
 
 try:
     from pyproj import Geod
@@ -55,13 +56,9 @@ def total_distance_m(df: pd.DataFrame, method: str = "auto") -> float:
 
 
 def total_time_s(df: pd.DataFrame) -> float | None:
-    if df.empty or "timestamp" not in df.columns:
+    if df.empty:
         return None
-    ts = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
-    valid = ts.dropna()
-    if len(valid) < 2:
-        return None
-    return float((valid.max() - valid.min()).total_seconds())
+    return float(total_duration_from_rows_s(df))
 
 
 def derive_speed_from_track(df: pd.DataFrame) -> pd.Series:
@@ -80,12 +77,10 @@ def productivity_ha_h(area_ha: float | None, time_s: float | None) -> float | No
 
 
 def state_durations_s(df: pd.DataFrame) -> dict[str, float]:
-    if df.empty or "state" not in df.columns or "timestamp" not in df.columns:
+    if df.empty or "state" not in df.columns:
         return {}
-    ts = pd.to_datetime(df["timestamp"], errors="coerce", utc=True)
-    delta = ts.shift(-1) - ts
-    seconds = delta.dt.total_seconds().fillna(0).clip(lower=0)
+    row_seconds = calculate_row_durations_s(df)
     result: dict[str, float] = {}
-    for state, value in seconds.groupby(df["state"]).sum().items():
+    for state, value in row_seconds.groupby(df["state"]).sum().items():
         result[str(state)] = float(value)
     return result

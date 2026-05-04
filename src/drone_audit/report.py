@@ -117,9 +117,14 @@ def build_html_report(
   <h2>Dashboard operacional</h2>
   <div class="cards">{cards}</div>
 
-  <h2>Resumo</h2>
+  <h2>Fonte principal dos dados</h2>
   <p><strong>Origem dos dados:</strong> {source_info}</p>
+  <h2>Confiabilidade dos dados</h2>
   <p><strong>Qualidade dos dados:</strong>{quality_html}</p>
+  <h2>Limitações da análise</h2><p>Análise auxiliar, experimental e estimada; não substitui responsável técnico.</p>
+  <h2>Avisos técnicos</h2>{warning_list}
+  <h2>Alertas operacionais</h2>{op_alert_list}
+  <h2>Resumo</h2>
   <p><strong>Diagnóstico automático:</strong>{auto_diag_html}</p>
   <table>
     <tr><th>Métrica</th><th>Valor</th></tr>
@@ -138,8 +143,8 @@ def build_html_report(
     {state_rows}
   </table>
 
-  <h2>Avisos de processamento</h2>
-  {warning_list}
+  <h2>Origem da área usada</h2><p>{escape(str(metrics.get("applied_area_ha"))) if metrics.get("applied_area_ha") is not None else "estimada/indisponível"}</p>
+  <h2>Origem do volume usado</h2><p>{escape(str(metrics.get("volume_aplicado_l"))) if metrics.get("volume_aplicado_l") is not None else "estimada/indisponível"}</p>
 
   <h2>Diagnóstico automático</h2>
   {op_alert_list}
