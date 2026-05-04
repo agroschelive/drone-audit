@@ -15,7 +15,7 @@ def test_development_docs_exist_and_have_expected_content():
     development = Path("docs/development.md")
     assert architecture.exists()
     assert development.exists()
-    assert "schema normalizado" in architecture.read_text(encoding="utf-8").lower()
+    assert "normalized schema" in architecture.read_text(encoding="utf-8").lower()
     assert "ruff check" in development.read_text(encoding="utf-8").lower()
 
 

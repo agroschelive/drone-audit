@@ -1,38 +1,33 @@
 # Contributing
 
-Contributions are welcome if they keep the project simple, honest and technically verifiable.
+## Development environment
 
-## Scope
+```bash
+python -m venv .venv
+source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+```
 
-Accepted contributions should improve:
+## Run quality checks
 
-- KML parsing;
-- CSV parsing;
-- basic metrics;
-- simple reports;
-- tests;
-- documentation;
-- data safety;
-- reproducibility.
+```bash
+ruff check src tests
+pytest -q
+pytest -q --cov=drone_audit --cov-report=term-missing
+```
 
-Avoid contributions that promise unsupported features, such as complete DAT parsing, automatic SmartFarm integration or definitive application-quality diagnosis, unless they include real validation and clear limitations.
+## Open a pull request
 
-## Data safety
+1. Create a topic branch from `main`.
+2. Keep changes focused and add or update tests.
+3. Preserve existing behavior unless your PR explicitly documents intended behavior changes.
+4. Describe scope, limitations, and testing in the PR.
 
-Do not submit real client data, real coordinates, identifiable flight logs, personal data, tokens, passwords, API keys or confidential commercial information.
+## Contribution rules
 
-Use only fictitious or fully anonymized data.
-
-## Pull request checklist
-
-Before opening a pull request:
-
-- run `PYTHONPATH=src pytest -q`;
-- verify that no secret or sensitive data was added;
-- update documentation if behavior changes;
-- keep the change small and focused;
-- explain limitations clearly.
-
-## License agreement
-
-By contributing, you agree that your contribution will be distributed under the GNU General Public License v3.0 only.
+- Never commit real client, operator, property, or location data.
+- Do not implement DAT support without real validated files and tests.
+- Keep the project alpha and experimental.
+- Preserve current behavior unless the PR explicitly states otherwise.

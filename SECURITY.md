@@ -1,35 +1,40 @@
-# Security Policy
+# Security and privacy policy
 
-## Supported versions
+## Sensitive data
 
-Only the current `main` branch and tagged alpha releases receive security review.
+Drone operation files may contain sensitive information, including:
 
-## Reporting a vulnerability
+- latitude and longitude;
+- property or farm names;
+- client names;
+- operator names;
+- drone serial numbers;
+- timestamps;
+- routes;
+- field boundaries;
+- commercial operation details;
+- tokens, API keys, passwords, or internal identifiers.
 
-Do not open a public issue for security problems involving secrets, data exposure or unsafe handling of files.
+## What must never be committed
 
-Report privately to:
+The following must never be committed to this public repository:
 
-`agroschelive@gmail.com`
+- raw `.DAT` files;
+- raw `.TXT` logs;
+- raw `.CSV` exports;
+- raw `.KML` routes;
+- real coordinates;
+- identifiable flight routes;
+- client/operator/property names;
+- drone serial numbers;
+- tokens, passwords, or API keys.
 
-Replace this placeholder with a real security contact before publishing the repository.
+## Public examples
 
-## What to report
+Public examples must be either synthetic or safely sanitized.
 
-Please report:
+Removing names is not enough. Real latitude/longitude must not be published. Shifted coordinates can still reveal route shape and should not be treated as fully anonymous. The safest default is to remove coordinates entirely or use fully synthetic coordinates.
 
-- exposed credentials;
-- unsafe file handling;
-- path traversal risks;
-- accidental inclusion of real flight logs;
-- accidental inclusion of private coordinates;
-- dependency vulnerabilities;
-- report generation issues that could expose private data.
+## Reporting security issues
 
-## Response target
-
-The maintainers will try to acknowledge valid reports within 7 days.
-
-## Data policy
-
-Never send real client files, private coordinates, API keys, passwords or tokens in public issues. Use synthetic samples whenever possible.
+Please report potential security or privacy issues privately to: `agroschelive@gmail.com`.
