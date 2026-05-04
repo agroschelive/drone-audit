@@ -1,32 +1,41 @@
 # Roadmap backlog
 
-Backlog organized by delivery horizon. This roadmap is aspirational and does not imply current support for future items.
+This file separates current reality from future plans.
 
-Real flight files used for validation must be locally provided or locally validated real files only. Raw real files must remain local and must not be committed to this repository. Public examples must be synthetic or safely sanitized.
+## Implementado
 
-The project currently provides telemetry normalization, metrics, and reporting utilities for supported inputs. It does not provide definitive aircraft, operation, or spraying diagnosis.
+- CLI local em Python para análise auxiliar.
+- Ingestão básica de CSV e KML.
+- JSON complementar opcional.
+- Relatório HTML técnico auxiliar.
+- Heurísticas experimentais para classificação operacional.
 
-## Short term (0–3 months)
+## Parcialmente implementado
 
-- Validate CSV parser with locally provided real files
-- Validate KML parser with locally provided real files
-- Improve normalized telemetry model
-- Expand automated tests
-- Document initial compatibility
+- XLSX experimental (parser existente, validação real ainda limitada).
+- TXT tabular legível em cenários limitados.
 
-## Medium term (3–9 months)
+## Planejado
 
-- Research DAT support using locally validated real files, tests, and documentation before any implementation
-- Evaluate TXT/log exports using locally validated real files
-- Improve HTML reports
-- Improve package/API structure
-- Strengthen CI/CD and documentation
+- Random Forest (classificação auxiliar futura).
+- LSTM (base futura para modelos preditivos).
+- Clustering histórico.
+- Dashboard web.
+- API REST.
+- PostgreSQL e integrações de armazenamento.
+- Notificações Telegram.
+- QR code de validação técnica.
 
-## Long term (9–18 months)
+## Fora do escopo atual
 
-- Agricultural platform integrations
-- Interactive dashboards
-- Advanced operational analysis
-- Multi-manufacturer support
-- Scalable web service
-- Open-source community consolidation
+- Certificado digital assinado com validade regulatória.
+- Assinatura RSA legalmente vinculante.
+- Integração regulatória automática com órgãos oficiais.
+- Promessas de precisão >95% sem validação estatística formal.
+
+
+Additional notes:
+- research DAT support only after locally validated real files, tests, and documentation.
+- evaluate TXT/log exports only after locally validated real files.
+- raw real files must not be committed to this repository.
+- research DAT support must include tests and documentation before any implementation.
