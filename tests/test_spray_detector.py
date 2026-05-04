@@ -10,3 +10,12 @@ def test_volume_sem_movimento():
     df=pd.DataFrame({"speed_m_s":[0.1,0.1],"volume_total_l":[1.0,1.01],"spray_on":[True,True],"flow_l_min":[0,0]})
     codes={a['code'] for a in detect_spray_anomalies(df)}
     assert "volume_sem_movimento" in codes and "pulverizacao_sem_fluxo" in codes
+
+
+def test_deslocando_sem_pulverizar_requires_min_relevance():
+    df = pd.DataFrame({
+        "speed_m_s": [0.1, 0.8, 0.1, 0.1, 0.1],
+        "spray_on": [True, False, True, True, True],
+    })
+    codes = {a["code"] for a in detect_spray_anomalies(df)}
+    assert "deslocando_sem_pulverizar" not in codes

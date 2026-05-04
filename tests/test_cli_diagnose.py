@@ -42,7 +42,7 @@ def test_cli_diagnose_includes_diagnostics(tmp_path, capsys):
     ).issubset(diagnostics)
     assert diagnostics["rows"] > 0
     assert "latitude" in diagnostics["columns"]
-    assert diagnostics["recognized_inputs"] == {"kml": False, "csv": True, "field_data": False}
+    assert diagnostics["recognized_inputs"] == {"kml": False, "csv": True, "xlsx": False, "txt": False, "dat": False, "field_data": False}
     assert diagnostics["valid_coordinates"] > 0
     assert diagnostics["valid_timestamps"] > 0
     assert diagnostics["has_speed"] is True

@@ -61,3 +61,26 @@ def test_corrupted_csv_warnings_are_rendered_in_html_report(tmp_path):
     assert "dataset may be incomplete" in html
     assert "invalid timestamps" in html
     assert "out-of-range coordinates" in html
+
+
+def test_pipeline_uses_swath_width_and_effective_area_in_metrics(tmp_path):
+    csv_path = tmp_path / "swath.csv"
+    csv_path.write_text("\n".join([
+        "timestamp,latitude,longitude,speed_m_s,valve_open",
+        "2026-01-01T00:00:00Z,-23.0,-46.0,2.0,true",
+        "2026-01-01T00:00:10Z,-23.0,-45.999,2.0,true",
+    ]), encoding="utf-8")
+
+    result = run_pipeline(csv_path=csv_path, swath_width_m=10.0, output_path=tmp_path / "report.html")
+    assert "swath_width_m" in result.dataframe.columns
+    assert result.metrics["applied_area_ha"] is not None
+    assert result.metrics["effective_area_ha"] == result.metrics["applied_area_ha"]
+
+
+def test_report_shows_all_area_variants(tmp_path):
+    output = tmp_path / "report_areas.html"
+    run_pipeline(csv_path=EXAMPLES / "sample_flight.csv", area_ha=12.5, output_path=output)
+    html = output.read_text(encoding="utf-8")
+    assert "Área informada" in html
+    assert "Área calculada" in html
+    assert "Área usada nos cálculos" in html

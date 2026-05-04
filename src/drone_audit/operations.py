@@ -4,10 +4,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-SPRAYING_STATES = {"estimated_spraying", "pulverizando"}
-MANEUVER_STATES = {"manobrando"}
-TRANSIT_STATES = {"moving", "deslocando", "retorno_base"}
-IDLE_STATES = {"idle", "parado", "troca_bateria", "reabastecimento"}
+from drone_audit.states import IDLE_STATES, MANEUVER_STATES, SPRAYING_STATES, TRANSIT_STATES
 
 
 @dataclass(frozen=True)

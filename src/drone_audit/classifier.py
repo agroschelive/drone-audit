@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from drone_audit.spray_detector import detect_spray_on
+from drone_audit.states import STATE_IDLE, STATE_MOVING, STATE_SPRAYING, STATE_UNKNOWN
 
 
 def classify_states(
@@ -21,13 +22,13 @@ def classify_states(
         spray = detect_spray_on(row)
         speed = float(speeds.loc[i])
         if spray is True and speed >= spray_speed_m_s:
-            states.append("estimated_spraying")
+            states.append(STATE_SPRAYING)
         elif speed <= 0.3:
-            states.append("idle")
+            states.append(STATE_IDLE)
         elif speed > moving_speed_m_s:
-            states.append("moving")
+            states.append(STATE_MOVING)
         else:
-            states.append("unknown")
+            states.append(STATE_UNKNOWN)
 
     out["state"] = states
     return out
