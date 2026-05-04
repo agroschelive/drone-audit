@@ -46,7 +46,7 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
                  operation_name: str | None = None, drone_model: str | None = None, operator: str | None = None,
                  farm_name: str | None = None, field_name: str | None = None, area_ha: float | None = None, planned_rate_l_ha: float | None = None, swath_width_m: float | None = None, output_path=None) -> PipelineResult:
     warnings: list[str] = []
-    kml_df = csv_df = xlsx_df = txt_df = dat_df = None
+    kml_df = csv_df = xlsx_df = txt_df = None
     source_type = "unknown"
 
     if kml_path:
@@ -66,7 +66,6 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
         source_type = parsed.source_type
     if dat_path:
         parsed = parse_dat(dat_path)
-        dat_df = parsed.dataframe
         warnings.extend(parsed.warnings)
         source_type = parsed.source_type
     if xlsx_path:

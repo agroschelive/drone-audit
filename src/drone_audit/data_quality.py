@@ -14,14 +14,22 @@ def assess_data_quality(df: pd.DataFrame, source_type: str) -> list[str]:
         "has_coordinates": {"latitude", "longitude"}.issubset(df.columns) and df[["latitude", "longitude"]].notna().any().all(),
         "has_timestamps": "timestamp" in df.columns and pd.to_datetime(df["timestamp"], errors="coerce", utc=True).notna().any(),
     }
-    if not checks["has_spray_signal"]: warnings.append("sem_sinal_abertura_pulverizador")
-    if not checks["has_flow"]: warnings.append("sem_vazao")
-    if not checks["has_volume"]: warnings.append("sem_volume_aplicado")
-    if not checks["has_swath_width"]: warnings.append("sem_largura_faixa")
-    if not checks["has_battery"]: warnings.append("sem_bateria")
+
+    if not checks["has_spray_signal"]:
+        warnings.append("sem_sinal_abertura_pulverizador")
+    if not checks["has_flow"]:
+        warnings.append("sem_vazao")
+    if not checks["has_volume"]:
+        warnings.append("sem_volume_aplicado")
+    if not checks["has_swath_width"]:
+        warnings.append("sem_largura_faixa")
+    if not checks["has_battery"]:
+        warnings.append("sem_bateria")
     if not checks["has_timestamps"]:
-        warnings.append("sem_tempo")
-        warnings.append("sem_timestamps")
-    if not checks["has_coordinates"]: warnings.append("sem_coordenadas")
-    if source_type.startswith("kml"): warnings.append("dados_kml_limitados")
+        warnings.extend(["sem_tempo", "sem_timestamps"])
+    if not checks["has_coordinates"]:
+        warnings.append("sem_coordenadas")
+    if source_type.startswith("kml"):
+        warnings.append("dados_kml_limitados")
+
     return warnings
