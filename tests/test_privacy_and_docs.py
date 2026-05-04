@@ -47,12 +47,83 @@ def test_fake_coordinates():
     assert -51.1 < out["longitude"].iloc[0] < -50.9
 
 
+def test_coordinate_aliases_removed_default_and_telemetry_preserved():
+    df = pd.DataFrame(
+        {
+            "gps_latitude": [-22.0],
+            "gps_longitude": [-51.0],
+            "latitude_deg": [-22.1],
+            "longitude_deg": [-51.1],
+            "lat_deg": [-22.2],
+            "lon_deg": [-51.2],
+            "speed_m_s": [4.0],
+            "altitude_m": [35.0],
+            "battery_pct": [80],
+        }
+    )
+    out = sanitize_csv_dataframe(df)
+    for col in ["gps_latitude", "gps_longitude", "latitude_deg", "longitude_deg", "lat_deg", "lon_deg"]:
+        assert col not in out.columns
+    assert "speed_m_s" in out.columns
+    assert "altitude_m" in out.columns
+    assert "battery_pct" in out.columns
+
+
+def test_unrelated_columns_not_removed_by_coordinate_token_logic():
+    df = pd.DataFrame(
+        {
+            "platform": ["x"],
+            "latency_ms": [10],
+            "monkey_speed": [1.5],
+            "speed_m_s": [4.0],
+            "altitude_m": [12.0],
+        }
+    )
+    out = sanitize_csv_dataframe(df)
+    assert list(out.columns) == ["platform", "latency_ms", "monkey_speed", "speed_m_s", "altitude_m"]
+
+
+def test_fake_coordinates_do_not_reuse_original_alias_values():
+    df = pd.DataFrame({"gps_latitude": [-15.123], "gps_longitude": [-47.321], "speed_m_s": [1.0]})
+    out = sanitize_csv_dataframe(df, fake_coordinates=True)
+    assert "latitude" in out.columns and "longitude" in out.columns
+    assert "gps_latitude" not in out.columns and "gps_longitude" not in out.columns
+    assert -23.1 < out["latitude"].iloc[0] < -22.9
+    assert -51.1 < out["longitude"].iloc[0] < -50.9
+    assert out["latitude"].iloc[0] != -15.123
+    assert out["longitude"].iloc[0] != -47.321
+
+
 def test_timestamp_normalization():
     df = pd.DataFrame({"timestamp": ["2024-07-13 12:00:00", "2024-07-13 12:00:05"]})
     out = sanitize_csv_dataframe(df)
     assert out["timestamp"].iloc[0].startswith("2026-01-01")
     assert out["timestamp"].iloc[0].endswith("Z")
     assert "2024" not in " ".join(out["timestamp"].tolist())
+
+
+def test_timestamp_aliases_normalized():
+    df = pd.DataFrame(
+        {
+            "gps_time": ["2024-07-13 12:00:00"],
+            "recorded_at": ["2025-02-01 01:02:03"],
+            "created_at": ["2023-01-01 00:00:01"],
+        }
+    )
+    out = sanitize_csv_dataframe(df)
+    for col in ["gps_time", "recorded_at", "created_at"]:
+        assert out[col].iloc[0].startswith("2026-01-01")
+        assert out[col].iloc[0].endswith("Z")
+    assert "2024" not in " ".join(out["gps_time"].tolist())
+
+
+def test_relative_duration_columns_not_normalized():
+    df = pd.DataFrame({"time_s": [1.0], "elapsed_s": [2.0], "elapsed_time_s": [3.0], "duration_s": [4.0]})
+    out = sanitize_csv_dataframe(df)
+    assert out["time_s"].tolist() == [1.0]
+    assert out["elapsed_s"].tolist() == [2.0]
+    assert out["elapsed_time_s"].tolist() == [3.0]
+    assert out["duration_s"].tolist() == [4.0]
 
 
 def test_sensitive_key_detection():
@@ -94,6 +165,10 @@ def test_cli_summary(tmp_path, capsys):
     summary = json.loads(capsys.readouterr().out)
     assert summary["rows"] == 1
     assert "columns_before" in summary and "columns_after" in summary
+    assert "original_coordinates_removed" in summary
+    assert "synthetic_coordinates_added" in summary
+    assert summary["original_coordinates_removed"] is True
+    assert summary["synthetic_coordinates_added"] is False
     result = pd.read_csv(outp)
     assert "Cliente" not in result.columns
     assert "latitude" not in result.columns
@@ -121,6 +196,7 @@ def test_docs_presence_and_privacy_text():
     assert "security.md" in readme
     assert "docs/audit-rules.md" in readme
     assert "do not commit real coordinates" in expected
+    assert "inspect sanitized output before publishing" in security or "inspect sanitized output before publishing" in expected
     assert "docs/audit-rules.md" in development
     assert "speed_m_s" in rules
     assert "valve_open" in rules
