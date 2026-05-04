@@ -2,18 +2,21 @@
 
 ## 0.2.1-alpha
 
-- Convert public-facing documentation and report text to English.
-- Keep the project scope minimal, experimental and transparent.
-- Remove generated Python cache files from the public package.
+### Added
+- Experimental drone-audit project foundation.
+- Basic KML parser.
+- Basic CSV parser.
+- Distance, time and estimated productivity calculations.
+- Simple heuristic operational state classification.
+- Auxiliary HTML report in Portuguese.
+- Processing warnings in the report.
+- CLI --diagnose mode.
+- Expected real-file documentation.
+- Normalized telemetry schema.
+- Base contract for future parsers.
+- Development tooling with Ruff, pytest and coverage.
 
-## 0.2.0-alpha
-
-- Add creator and idealizer attribution.
-- Add GPLv3 license and legal notices.
-- Add security, contributing and disclaimer documents.
-- Add KML parser for LineString and gx:Track.
-- Add CSV parser with basic column aliases.
-- Add geodesic distance metrics.
-- Add simple operational state classifier.
-- Add HTML report with embedded map.
-- Add fictitious examples and basic tests.
+### Notes
+- The project is still experimental.
+- The project does not yet implement complete DAT parsing.
+- The project does not provide definitive aircraft, operation or real spraying diagnosis.

@@ -1,25 +1,25 @@
-# Arquitetura do drone-audit
+# drone-audit architecture
 
-## Objetivo da arquitetura
+## Architecture goal
 
-A arquitetura do `drone-audit` deve permanecer simples, testável e modular enquanto o projeto evolui para suportar arquivos reais do ecossistema DJI Agras.
+The `drone-audit` architecture should remain simple, testable, and modular while the project evolves toward supporting real DJI Agras ecosystem files.
 
-## Fluxo atual
+## Current flow
 
-entrada (.csv/.kml/.json) -> parser -> dataframe normalizado -> pipeline -> métricas -> relatório HTML / JSON diagnóstico
+input (`.csv`/`.kml`/`.json`) -> parser -> normalized dataframe -> pipeline -> metrics -> HTML report / diagnostic JSON
 
-## Contrato dos parsers
+## Parser contract
 
-Cada parser deve evoluir para retornar:
-- dataframe normalizado para o schema do projeto
-- warnings
-- source type
+Each parser should evolve to return:
+- normalized dataframe mapped to the project schema;
+- warnings;
+- source type.
 
-Suporte a arquivos `.dat` e `.txt` deve ser implementado somente quando arquivos reais estiverem disponíveis para validação.
+Support for `.dat` and `.txt` files should only be implemented when real files are available for validation.
 
-## Schema normalizado
+## Normalized schema
 
-Colunas esperadas:
+Expected columns:
 - timestamp
 - latitude
 - longitude
@@ -30,20 +30,20 @@ Colunas esperadas:
 - source
 - state
 
-Nem todo arquivo terá todas as colunas em todas as situações.
+Not every file will provide every column in every situation.
 
-## Métricas
+## Metrics
 
-Métricas atuais:
+Current metrics:
 - distance_m
 - time_s
 - area_ha
 - productivity_ha_h
 - state_durations_s
 
-A interpretação técnica continua auxiliar e experimental.
+Technical interpretation remains auxiliary and experimental.
 
-## Próximos passos arquiteturais
+## Future architecture steps
 
 - parser registry
 - operational state machine
@@ -52,3 +52,7 @@ A interpretação técnica continua auxiliar e experimental.
 - richer data quality report
 - anonymization/sanitization tool for real files
 - comparison between productive and non-productive time
+
+## Current classifier role and limitations
+
+The current classifier is a heuristic helper for estimated operational states. It is not definitive proof of aircraft condition, operational compliance, or real spraying activity.

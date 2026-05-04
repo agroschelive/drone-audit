@@ -56,3 +56,12 @@ client_data/
 Thumbs.db
 .vscode/
 .idea/
+
+# Real samples protections
+examples/real_samples/*.dat
+examples/real_samples/*.DAT
+examples/real_samples/*raw*
+examples/real_samples/*original*
+*.tmp
+!examples/real_samples/README.md
+!examples/real_samples/*synthetic*.txt

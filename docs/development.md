@@ -1,42 +1,38 @@
-# Desenvolvimento do drone-audit
+# drone-audit development
 
-## Instalação para desenvolvimento
+## Development setup
 
 ```bash
+python -m venv .venv
+source .venv/bin/activate
+# Windows PowerShell: .venv\Scripts\activate
+python -m pip install --upgrade pip
 pip install -e ".[dev]"
 ```
 
-## Rodar testes
+## Run tests
 
 ```bash
 pytest -q
 ```
 
-## Rodar lint
+## Run lint checks
 
 ```bash
 ruff check src tests
 ```
 
-## Rodar cobertura
+## Run coverage
 
 ```bash
 pytest -q --cov=drone_audit --cov-report=term-missing
 ```
 
-## Rodar modo diagnóstico
+## Real data security
 
-```bash
-PYTHONPATH=src python -m drone_audit.cli --csv examples/sample_flight.csv --area-ha 12.5 --output reports/report_csv.html --diagnose
-```
+Never commit real data. Use synthetic samples whenever possible. Use the anonymization CLI before sharing CSV-like data publicly. Avoid publishing KML routes from real properties, and do not upload DAT files to GitHub.
 
-## Como preparar um PR
-
-1. Crie uma branch a partir da `main`.
-2. Implemente mudanças pequenas, conservadoras e com testes.
-3. Rode lint, testes e cobertura antes de abrir o PR.
-4. Descreva claramente motivação, escopo e limitações.
-
-## Regra de dados
-
-Nunca commitar dados reais de clientes, propriedades privadas ou arquivos sensíveis de voo.
+See also:
+- [SECURITY.md](../SECURITY.md)
+- [docs/expected-real-files.md](expected-real-files.md)
+- [docs/audit-rules.md](audit-rules.md)

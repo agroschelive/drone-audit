@@ -48,6 +48,15 @@ See also: [`DISCLAIMER.md`](DISCLAIMER.md).
 
 Never publish real client data, private coordinates, identifiable flight files, property names, tokens, passwords or API keys.
 
+
+## Data security
+
+Do not publish real client, property, or operator data. Do not publish real coordinates. Public examples must be synthetic or safely sanitized. See [SECURITY.md](SECURITY.md) and [docs/expected-real-files.md](docs/expected-real-files.md).
+
+## Audit rules
+
+Current operational states are heuristic and experimental. Classification rules are documented in [docs/audit-rules.md](docs/audit-rules.md). The project does not provide definitive aircraft, operation, or real spraying diagnosis.
+
 ## Installation
 
 ```bash
