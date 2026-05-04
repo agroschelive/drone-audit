@@ -79,7 +79,7 @@ def build_html_report(
     op_alert_list = f"<ul>{op_alert_items}</ul>" if op_alert_items else "<p>Sem alertas operacionais automáticos.</p>"
 
     cards = "".join([
-        _metric_card("Área aplicada", metrics.get("area_ha"), "ha"),
+        _metric_card("Área aplicada", metrics.get("effective_area_ha") or metrics.get("applied_area_ha") or metrics.get("area_ha"), "ha"),
         _metric_card("Tempo total", op.get("tempo_total_s"), "s"),
         _metric_card("Tempo pulverizando", op.get("tempo_pulverizando_s"), "s"),
         _metric_card("Tempo manobrando", op.get("tempo_manobrando_s"), "s"),
@@ -127,6 +127,8 @@ def build_html_report(
     <tr><td>Distância percorrida</td><td>{_format_number(metrics.get('distance_m'))} m</td></tr>
     <tr><td>Tempo total</td><td>{_format_number(metrics.get('time_s'), 1)} s</td></tr>
     <tr><td>Área informada</td><td>{_format_number(metrics.get('area_ha'))} ha</td></tr>
+    <tr><td>Área calculada</td><td>{_format_number(metrics.get('applied_area_ha'))} ha</td></tr>
+    <tr><td>Área usada nos cálculos</td><td>{_format_number(metrics.get('effective_area_ha'))} ha</td></tr>
     <tr><td>Produtividade estimada</td><td>{_format_number(metrics.get('productivity_ha_h'))} ha/h</td></tr>
   </table>
 

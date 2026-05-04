@@ -43,6 +43,9 @@ def build_diagnostics(result: PipelineResult, args: argparse.Namespace) -> dict[
         "recognized_inputs": {
             "kml": bool(args.kml),
             "csv": bool(args.csv),
+            "xlsx": bool(args.xlsx),
+            "txt": bool(args.txt),
+            "dat": bool(args.dat),
             "field_data": bool(args.field_data),
         },
         "valid_coordinates": 0,

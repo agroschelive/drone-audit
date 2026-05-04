@@ -89,6 +89,12 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
     if df.empty:
         warnings.append("No usable data found.")
     else:
+        if swath_width_m is not None and not df.empty:
+            if "swath_width_m" in df.columns:
+                df["swath_width_m"] = df["swath_width_m"].fillna(swath_width_m)
+            else:
+                df["swath_width_m"] = swath_width_m
+
         if "speed_m_s" not in df.columns or pd.to_numeric(df.get("speed_m_s"), errors="coerce").isna().all():
             df["speed_m_s"] = derive_speed_from_track(df)
         df = classify_states(df)
@@ -98,21 +104,22 @@ def run_pipeline(kml_path=None, csv_path=None, field_data_path=None, xlsx_path=N
     volume_aplicado_l = calculate_spray_volume_l(df)
     battery_usage = battery_usage_pct(df)
     applied_area = calculate_applied_area_ha(df)
-    op_metrics = compute_operational_metrics(durations, area_ha or applied_area, time_s, battery_usage, volume_aplicado_l)
+    effective_area_ha = area_ha if area_ha is not None else applied_area
+    op_metrics = compute_operational_metrics(durations, effective_area_ha, time_s, battery_usage, volume_aplicado_l)
     dq = assess_data_quality(df, source_type) if not df.empty else ["dados_insuficientes_para_estado_operacional"]
     warnings.extend(dq)
 
     spray_anomalies = detect_spray_anomalies(df)
     flow_stats = calculate_flow_stats(df)
     swath_width_stats = calculate_swath_width_stats(df)
-    battery_per_ha_pct = calculate_battery_per_ha(df, area_ha or applied_area)
+    battery_per_ha_pct = calculate_battery_per_ha(df, effective_area_ha)
     spray_time_s = calculate_spray_time_s(df)
     non_spray_moving_time_s = calculate_non_spray_moving_time_s(df)
     idle_time_s = calculate_idle_time_s(df)
 
     metrics = {
-        "distance_m": total_distance_m(df), "time_s": time_s, "area_ha": area_ha,
-        "productivity_ha_h": productivity_ha_h(area_ha, time_s), "state_durations_s": durations,
+        "distance_m": total_distance_m(df), "time_s": time_s, "area_ha": area_ha, "effective_area_ha": effective_area_ha,
+        "productivity_ha_h": productivity_ha_h(effective_area_ha, time_s), "state_durations_s": durations,
         "battery_usage_pct": battery_usage, "volume_aplicado_l": volume_aplicado_l, "applied_area_ha": applied_area, "real_rate_l_ha": calculate_real_application_rate_l_ha(volume_aplicado_l, applied_area),
         "operational": op_metrics.__dict__, "operational_alerts": generate_operational_alerts(op_metrics),
         "spray_segments": [s.__dict__ for s in create_spray_segments(df)], "spray_anomalies": spray_anomalies,

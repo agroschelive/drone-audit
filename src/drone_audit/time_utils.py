@@ -39,3 +39,11 @@ def total_duration_from_rows_s(df: pd.DataFrame) -> float:
     if df.empty:
         return 0.0
     return float(calculate_row_durations_s(df).sum())
+
+
+def sum_states_time_s(df: pd.DataFrame, state_names: set[str]) -> float:
+    if df.empty or "state" not in df.columns or not state_names:
+        return 0.0
+    durations = calculate_row_durations_s(df)
+    mask = df["state"].astype("string").isin(state_names)
+    return float(durations[mask].sum())

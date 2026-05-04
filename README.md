@@ -68,9 +68,9 @@ pip install -e .
 ## Tests and lint
 
 ```bash
-pip install -e ".[test]"
+pip install -e ".[dev]"
 pytest -q
-ruff check .
+ruff check src tests
 ```
 
 ## Quick run

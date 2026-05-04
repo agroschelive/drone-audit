@@ -106,11 +106,25 @@ def detect_spray_anomalies(df):
         alerts.append({"code": "dados_insuficientes_spray"})
     if (spray & (speed < 0.3)).any():
         alerts.append({"code": "spray_ligado_parado"})
-    if ((~spray) & (speed > 0.5)).any():
-        alerts.append({"code": "deslocando_sem_pulverizar"})
+    moving_without_spray = ((~spray) & (speed > 0.5))
+    if moving_without_spray.any():
+        valid_rows = int(d["_spray"].notna().sum())
+        point_ratio = (float(moving_without_spray.sum()) / valid_rows) if valid_rows > 0 else 0.0
+        time_ratio = 0.0
+        if "timestamp" in d.columns:
+            ts = pd.to_datetime(d["timestamp"], errors="coerce", utc=True)
+            if ts.notna().sum() >= 2:
+                dt = ts.sort_values().diff().dt.total_seconds().clip(lower=0, upper=600).fillna(0)
+                row_durations = dt.reindex(d.index).fillna(0)
+                total_time = float(row_durations.sum())
+                moving_time = float(row_durations[moving_without_spray].sum())
+                time_ratio = (moving_time / total_time) if total_time > 0 else 0.0
+        if point_ratio > 0.2 or time_ratio > 0.2:
+            alerts.append({"code": "deslocando_sem_pulverizar"})
     if (d["_volume_increase"] & (speed < 0.3)).any():
         alerts.append({"code": "volume_sem_movimento"})
-    if ((spray) & ((pd.to_numeric(d.get("flow_l_min"), errors="coerce").fillna(0)) <= 0)).any():
+    flow_series = pd.to_numeric(d.get("flow_l_min", pd.Series(index=d.index, dtype="float64")), errors="coerce").fillna(0)
+    if ((spray) & (flow_series <= 0)).any():
         alerts.append({"code": "pulverizacao_sem_fluxo"})
     if ((speed > 1.0) & (~spray) & (d["_area_increase"])).any():
         alerts.append({"code": "falha_pulverizacao_em_movimento", "severity": "warning"})
