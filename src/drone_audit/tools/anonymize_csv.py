@@ -6,33 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from drone_audit.privacy import sanitize_csv_dataframe
-
-
-def _is_coordinate_name(name: str) -> bool:
-    normalized = name.strip().lower()
-    return normalized in {
-        "latitude",
-        "longitude",
-        "lat",
-        "lon",
-        "lng",
-        "gps_lat",
-        "gps_lon",
-        "gps_latitude",
-        "gps_longitude",
-        "latitude_deg",
-        "longitude_deg",
-        "lat_deg",
-        "lon_deg",
-        "lng_deg",
-        "flight_lat",
-        "flight_lon",
-        "flight_lng",
-        "aircraft_lat",
-        "aircraft_lon",
-        "aircraft_lng",
-    }
+from drone_audit.privacy import coordinate_columns, sanitize_csv_dataframe
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -59,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     sanitized.to_csv(output_path, index=False)
 
-    original_coordinate_cols = [col for col in df.columns if _is_coordinate_name(col)]
+    original_coordinate_cols = coordinate_columns(df.columns)
     removed_original_coordinate_cols = [col for col in original_coordinate_cols if col not in sanitized.columns]
 
     summary = {

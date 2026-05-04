@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from drone_audit.privacy import sanitize_csv_dataframe
+from drone_audit.privacy import coordinate_columns, is_coordinate_column, sanitize_csv_dataframe
 from drone_audit.tools.anonymize_csv import main
 
 
@@ -173,6 +173,69 @@ def test_cli_summary(tmp_path, capsys):
     assert "Cliente" not in result.columns
     assert "latitude" not in result.columns
 
+
+
+def test_cli_summary_coordinate_aliases_and_fake_coordinates(tmp_path, capsys):
+    inp = tmp_path / "in_aliases.csv"
+    outp = tmp_path / "out_aliases.csv"
+    pd.DataFrame(
+        {
+            "gps_latitude": [-22.0],
+            "gps_longitude": [-51.0],
+            "latitude_deg": [-22.1],
+            "longitude_deg": [-51.1],
+            "speed_m_s": [4.0],
+            "altitude_m": [35.0],
+        }
+    ).to_csv(inp, index=False)
+
+    rc = main(["--input", str(inp), "--output", str(outp)])
+    assert rc == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["original_coordinates_removed"] is True
+    assert summary["synthetic_coordinates_added"] is False
+
+    result = pd.read_csv(outp)
+    for col in ["gps_latitude", "gps_longitude", "latitude_deg", "longitude_deg"]:
+        assert col not in result.columns
+    assert "speed_m_s" in result.columns
+    assert "altitude_m" in result.columns
+
+    inp_fake = tmp_path / "in_fake.csv"
+    outp_fake = tmp_path / "out_fake.csv"
+    pd.DataFrame({"gps_latitude": [-22.0], "gps_longitude": [-51.0], "speed_m_s": [4.0]}).to_csv(inp_fake, index=False)
+
+    rc = main(["--input", str(inp_fake), "--output", str(outp_fake), "--fake-coordinates"])
+    assert rc == 0
+    summary_fake = json.loads(capsys.readouterr().out)
+    assert summary_fake["original_coordinates_removed"] is True
+    assert summary_fake["synthetic_coordinates_added"] is True
+
+    result_fake = pd.read_csv(outp_fake)
+    assert "latitude" in result_fake.columns and "longitude" in result_fake.columns
+    assert "gps_latitude" not in result_fake.columns and "gps_longitude" not in result_fake.columns
+    assert -23.1 < result_fake["latitude"].iloc[0] < -22.9
+    assert -51.1 < result_fake["longitude"].iloc[0] < -50.9
+
+
+def test_coordinate_helper_consistency():
+    true_names = [
+        "latitude",
+        "longitude",
+        "gps_latitude",
+        "gps_longitude",
+        "latitude_deg",
+        "longitude_deg",
+        "flight_lat",
+        "aircraft_lon",
+    ]
+    false_names = ["platform", "latency_ms", "monkey_speed", "speed_m_s", "altitude_m", "battery_pct"]
+
+    assert coordinate_columns(true_names + false_names) == true_names
+    for name in true_names:
+        assert is_coordinate_column(name) is True
+    for name in false_names:
+        assert is_coordinate_column(name) is False
 
 def test_docs_presence_and_privacy_text():
     required = [

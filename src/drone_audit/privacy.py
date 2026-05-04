@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unicodedata
 from datetime import datetime, timedelta, timezone
+from collections.abc import Iterable
 
 import pandas as pd
 
@@ -119,13 +120,17 @@ def _is_sensitive_column(name: str) -> bool:
     return any(part in SENSITIVE_EXACT_NAMES for part in parts)
 
 
-def _is_coordinate_column(name: str) -> bool:
+def is_coordinate_column(name: str) -> bool:
     normalized = _normalized_name(name)
     if normalized in LOCATION_NAMES:
         return True
 
     parts = _normalize_parts(name)
     return any(part in {"latitude", "longitude", "lat", "lon", "lng"} for part in parts)
+
+
+def coordinate_columns(columns: Iterable[str]) -> list[str]:
+    return [col for col in columns if is_coordinate_column(col)]
 
 
 def _timestamp_columns(columns: list[str]) -> list[str]:
@@ -148,11 +153,10 @@ def sanitize_csv_dataframe(
 ) -> pd.DataFrame:
     sanitized = df.copy(deep=True)
     sensitive_cols: list[str] = []
-    coordinate_cols: list[str] = []
+    coordinate_cols = coordinate_columns(sanitized.columns)
 
     for col in sanitized.columns:
-        if _is_coordinate_column(col):
-            coordinate_cols.append(col)
+        if col in coordinate_cols:
             continue
         if _is_sensitive_column(col):
             sensitive_cols.append(col)
