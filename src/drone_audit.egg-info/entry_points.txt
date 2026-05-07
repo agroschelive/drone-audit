@@ -1,2 +1,0 @@
-[console_scripts]
-drone-audit = drone_audit.cli:main
