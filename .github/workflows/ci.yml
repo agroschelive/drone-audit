@@ -38,7 +38,7 @@ jobs:
       - name: Test
         env:
           PYTHONPATH: src
-        run: pytest -q
+        run: pytest -q --cov=drone_audit
 
       - name: Build package
         run: python -m build
