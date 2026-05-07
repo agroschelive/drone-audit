@@ -1,23 +1,14 @@
-# Support matrix
-
-Supported formats in this alpha stage are limited and should be treated as auxiliary inputs only.
-
-Real files must remain local only. Public examples must be synthetic or safely sanitized.
-
-| Format | Status | Notes |
+﻿| Format | Status | Notes |
 |---|---|---|
-| CSV | Basic supported | Core tabular ingestion path for metrics/report when required columns exist. |
-| KML | Supported for route/map | Useful for route context; may not contain detailed telemetry. |
-| JSON complementar | Supported (auxiliary) | Optional context data for reports; not primary telemetry. |
-| XLSX | Experimental | Parser exists, but requires broader real-world validation. |
-| TXT tabular legível | Experimental/limited | Only normalized tabular TXT scenarios; quality depends on structure. |
-| TXT bruto DJI | Not implemented | Raw DJI TXT logs are not supported in current version. |
-| DAT | Not implemented | No DAT parser implemented in this repository. |
-| BAT | Not implemented | Outside current alpha scope. |
+| CSV exports | Supported | Common aliases and normalized fields supported |
+| KML routes | Supported | LineString and gx:Track supported |
+| JSON field metadata | Partial | Auxiliary metadata only |
+| XLSX exports | Experimental | Requires broader real-world validation |
+| Plain-text tabular TXT exports | Experimental | Only simple structured exports may work |
+| TXT/log exports | Not implemented | Raw DJI TXT telemetry parsing is outside current alpha scope |
+| TXT bruto DJI | Not implemented | Proprietary/raw telemetry parsing is outside current alpha scope |
+| DJI DAT files | Not implemented | Raw binary parsing not implemented |
 
-Clarifications:
-- DAT is not implemented.
-- Raw DJI TXT is not implemented.
-- Support means auxiliary processing only, not definitive diagnosis.
+Real files must remain local only.
 
-- TXT/log exports: not implemented in this version.
+Public examples must be synthetic or safely sanitized.

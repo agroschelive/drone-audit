@@ -1,4 +1,4 @@
-# drone-audit
+﻿# drone-audit
 
 Open-source Python CLI project for **auxiliary** analysis of exported operation files from DJI Agras agricultural drones.
 
@@ -14,10 +14,18 @@ This is an **alpha experimental** release. Outputs are technical aids only.
 - Basic KML parsing (`LineString`, `gx:Track`) for route context.
 - Optional complementary JSON field data.
 - Operational metrics (distance, time, productivity estimates, efficiency slices).
-- Heuristic auxiliary classification and diagnostics.
+- Heuristic auxiliary classification and operational indicators.
 - HTML technical auxiliary report.
 
 ## Important limits
+
+This project has not yet been validated against a broad real-world operational dataset.
+Current heuristics and indicators should be considered experimental and subject to revision.
+
+
+This project has not yet been validated against a broad real-world operational dataset.
+Current heuristics and indicators should be considered experimental and subject to revision.
+
 
 - This project does **not** replace technical reports, field inspections, or responsible professional review.
 - It does **not** guarantee definitive diagnosis.
@@ -93,3 +101,5 @@ GNU GPLv3 only. See [LICENSE](LICENSE).
 ```bash
 PYTHONPATH=src python -m drone_audit.cli --csv examples/sample_flight.csv --area-ha 12.5 --output reports/report_csv.html --diagnose
 ```
+
+
