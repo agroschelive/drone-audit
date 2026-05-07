@@ -8,25 +8,20 @@ version = "0.3.0-alpha"
 description = "Experimental auxiliary analysis tool for exported DJI Agras operation files."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "GPL-3.0-only" }
-authors = [{ name = "Italo Schelive Correia", email = "agroschelive@gmail.com" }]
+
 dependencies = [
   "pandas>=2.0",
   "pyproj>=3.6",
-  "folium>=0.16",
-  "openpyxl>=3.1",
+  "folium>=0.16"
 ]
 
 [project.optional-dependencies]
-test = ["pytest>=8.0"]
 dev = [
   "pytest>=8.0",
   "pytest-cov>=5.0",
-  "ruff>=0.8",
+  "ruff>=0.8.0",
+  "build>=1.2.0"
 ]
-
-[project.scripts]
-drone-audit = "drone_audit.cli:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -35,11 +30,3 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
-ignore = ["E501", "E712", "I001"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
