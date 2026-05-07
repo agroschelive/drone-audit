@@ -5,5 +5,10 @@
 | JSON field metadata | Partial | Auxiliary metadata only |
 | XLSX exports | Experimental | Requires broader real-world validation |
 | Plain-text tabular TXT exports | Experimental | Only simple structured exports may work |
-| Raw DJI TXT telemetry logs | Not implemented | Proprietary/raw telemetry parsing is outside current alpha scope |
+| TXT/log exports | Not implemented | Raw DJI TXT telemetry parsing is outside current alpha scope |
+| TXT bruto DJI | Not implemented | Proprietary/raw telemetry parsing is outside current alpha scope |
 | DJI DAT files | Not implemented | Raw binary parsing not implemented |
+
+Real files must remain local only.
+
+Public examples must be synthetic or safely sanitized.
