@@ -23,6 +23,10 @@ This project has not yet been validated against a broad real-world operational d
 Current heuristics and indicators should be considered experimental and subject to revision.
 
 
+This project has not yet been validated against a broad real-world operational dataset.
+Current heuristics and indicators should be considered experimental and subject to revision.
+
+
 - This project does **not** replace technical reports, field inspections, or responsible professional review.
 - It does **not** guarantee definitive diagnosis.
 - It does **not** provide automatic regulatory validity.
@@ -97,4 +101,5 @@ GNU GPLv3 only. See [LICENSE](LICENSE).
 ```bash
 PYTHONPATH=src python -m drone_audit.cli --csv examples/sample_flight.csv --area-ha 12.5 --output reports/report_csv.html --diagnose
 ```
+
 
